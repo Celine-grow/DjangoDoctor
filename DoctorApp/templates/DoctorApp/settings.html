@@ -15,23 +15,7 @@
                 <div class="logo-icon">C</div>
                 <span class="logo-text">Cystella</span>
             </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="{% url 'dashboard' %}" class="nav-link active">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'patients' %}" class="nav-link">Patients</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'chat' %}" class="nav-link">Chat</a>
-                </li>
-                 <li class="nav-item">
-                    <a href="{% url 'cystela' %}" class="nav-link">Ask Cystella</a>
-                </li>
-                 <li class="nav-item">
-                    <a href="{% url 'settings' %}" class="nav-link">Settings</a>
-                </li>
-            </ul>
+            
         </nav>
 
         <!-- Main Content -->
@@ -143,62 +127,57 @@
                                 </div>
                             </div>
 
-                            <!-- Personal Information -->
                             <div class="form-section">
+                                {% block content %}
                                 <h3>Personal Information</h3>
                                 <div class="form-grid">
                                     <div class="form-group">
-                                        <label for="firstName">First Name</label>
-                                        <input type="text" id="firstName" value="Dr. Sarah" class="form-input">
+                                        <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                                        {{ form.first_name }}
                                     </div>
                                     <div class="form-group">
-                                        <label for="lastName">Last Name</label>
-                                        <input type="text" id="lastName" value="Rodriguez" class="form-input">
+                                        <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                                        {{ form.last_name }}
                                     </div>
                                     <div class="form-group">
-                                        <label for="email">Email Address</label>
-                                        <input type="email" id="email" value="sarah.rodriguez@hospital.com" class="form-input">
+                                        <label for="{{ form.email.id_for_label }}">Email Address</label>
+                                        {{ form.email }}
                                     </div>
                                     <div class="form-group">
-                                        <label for="phone">Phone Number</label>
-                                        <input type="tel" id="phone" value="+1 (555) 123-4567" class="form-input">
+                                        <label for="{{ form.contact.id_for_label }}">Phone Number</label>
+                                        {{ form.contact }}
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Professional Information -->
                             <div class="form-section">
                                 <h3>Professional Information</h3>
                                 <div class="form-grid">
                                     <div class="form-group">
-                                        <label for="specialty">Medical Specialty</label>
-                                        <select id="specialty" class="form-select">
-                                            <option value="gynecology">Gynecology</option>
-                                            <option value="oncology">Gynecologic Oncology</option>
-                                            <option value="reproductive">Reproductive Endocrinology</option>
-                                            <option value="maternal">Maternal-Fetal Medicine</option>
-                                        </select>
+                                        <label for="{{ form.specialization.id_for_label }}">Specialization</label>
+                                        {{ form.specialization }}
                                     </div>
                                     <div class="form-group">
-                                        <label for="license">Medical License Number</label>
-                                        <input type="text" id="license" value="MD123456789" class="form-input">
+                                        <label for="{{ form.license_number.id_for_label }}">License Number</label>
+                                        {{ form.license_number }}
                                     </div>
                                     <div class="form-group">
-                                        <label for="hospital">Hospital/Clinic</label>
-                                        <input type="text" id="hospital" value="Metropolitan Medical Center" class="form-input">
+                                        <label for="{{ form.years_of_experience.id_for_label }}">Years of Experience</label>
+                                        {{ form.years_of_experience }}
                                     </div>
                                     <div class="form-group">
-                                        <label for="department">Department</label>
-                                        <input type="text" id="department" value="Gynecologic Oncology" class="form-input">
+                                        <label for="{{ form.qualifications.id_for_label }}">Qualifications</label>
+                                        {{ form.qualifications }}
+                                        <small class="form-text text-muted">Enter each qualification on a new line</small>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="form-actions">
-                                <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
-                                <button class="btn-secondary" onclick="cancelChanges()">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
                             </div>
-                        </div>
+                        </form>
                     </div>
 
                     <!-- Account & Security Settings -->
@@ -573,3 +552,4 @@
     </script>
 </body>
 </html>
+{% endblock content %}

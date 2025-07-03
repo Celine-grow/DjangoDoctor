@@ -1,17 +1,16 @@
 from django.urls import path
 from . import views
+from .views import message_patient
 
 urlpatterns = [
-#     path('register/', views.register_doctor, name='register_doctor'),
-#     path('login/', views.login_doctor, name='login_doctor'),
-#     path('dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
-#     path('logout/', views.logout_doctor, name='logout_doctor'),
-# 
- path('', views.login, name='login'),
- path('dashboard/', views.dashboard, name='dashboard'),
- path('patients/', views.patients, name='patients'),  
- path('chat/', views.chat, name='chat'),
- path('cystela/', views.cystela, name='cystela'),  
- path('settings/', views.settings, name='settings'),  
+    path('', views.register_doctor, name='register_doctor'),
+    path('login/', views.login_doctor, name='login_doctor'),
+    path('dashboard/', views.doctor_dashboard, name='dashboard'),
+    path('patients/', views.patients, name='patients'),  
+    path('message/<str:patient_name>/', message_patient, name='message_patient'),
+    path('cystela/', views.cystela, name='cystela'),  
+    path('settings/', views.settings_view, name='settings'), 
+    path('add_patient/', views.add_patient, name='add_patient'),
+    path('list_patients/', views.list_patients, name='list_patients'),
 
 ]

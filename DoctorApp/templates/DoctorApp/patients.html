@@ -1,585 +1,198 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cystella - Patients</title>
-    <link rel="stylesheet" href="{% static 'css/patients.css' %}">
+  <meta charset="UTF-8">
+  <title>Doctor Dashboard - Patients</title>
+  <style>
+    .patients-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    body{
+        background: #ffb3ba;
+    }
+
+    .patient-card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 200px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .patient-card:hover {
+      transform: scale(1.03);
+    }
+
+    .avatar-icon {
+      font-size: 48px;
+      margin-bottom: 0.7rem;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .popup-overlay.active {
+      display: flex;
+    }
+
+    .popup-body {
+      background:#cc9197;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .info-section {
+      margin-bottom: 1rem;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-label {
+      font-weight: bold;
+    }
+
+    .message-btn {
+      background: #007bff;
+      color: #ffb3ba;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .message-btn:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="logo">
-                <div class="logo-icon">C</div>
-                <span class="logo-text">Cystella</span>
-            </div>
-           <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="{% url 'dashboard' %}" class="nav-link active">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'patients' %}" class="nav-link">Patients</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'chat' %}" class="nav-link">Chat</a>
-                </li>
-                 <li class="nav-item">
-                    <a href="{% url 'cystela' %}" class="nav-link">Ask Cystella</a>
-                </li>
-                 <li class="nav-item">
-                    <a href="{% url 'settings' %}" class="nav-link">Settings</a>
-                </li>
-            </ul>
-        </nav>
 
-        <!-- Patients Page -->
-        <main class="main-content" id="patientsPage">
-            <div class="header">
-                <h1>Gynecology Patients</h1>
-                <div class="date">June 9, 2025</div>
-            </div>
+  <h2 style="text-align:center;">Patient Profiles</h2>
 
-            <div class="patients-section">
-                <h2 class="section-title">Your Patients</h2>
-                <div class="patients-grid">
-                    <!-- Patient Cards (same as before) -->
-                    <div class="patient-card routine-care" onclick="showPatientDetails('sarah')">
-                        <div class="patient-avatar">
-                            <div class="avatar-icon">👩‍💼</div>
-                        </div>
-                        <div class="patient-name">Sarah</div>
-                        <div class="patient-preview">Age: 28 • Annual Exam</div>
-                        <div class="condition-indicator routine">Routine</div>
-                    </div>
+  <div id="patientsContainer" class="patients-grid">
+    <!-- JS will inject patient cards here -->
+  </div>
+  <!-- <h2 style="text-align: center;">
+  Chat with {{ patient.first_name }} ({{ patient.last_name }})
+  </h2> -->
 
-                    <div class="patient-card moderate-care" onclick="showPatientDetails('jessica')">
-                        <div class="patient-avatar">
-                            <div class="avatar-icon">👩‍🎓</div>
-                        </div>
-                        <div class="patient-name">Jessica</div>
-                        <div class="patient-preview">Age: 24 • PCOS</div>
-                        <div class="condition-indicator moderate">Moderate</div>
-                    </div>
-
-                    <div class="patient-card moderate-care" onclick="showPatientDetails('maria')">
-                        <div class="patient-avatar">
-                            <div class="avatar-icon">👩‍🏫</div>
-                        </div>
-                        <div class="patient-name">Maria</div>
-                        <div class="patient-preview">Age: 32 • Endometriosis</div>
-                        <div class="condition-indicator moderate">Moderate</div>
-                    </div>
-
-                    <div class="patient-card moderate-care" onclick="showPatientDetails('amanda')">
-                        <div class="patient-avatar">
-                            <div class="avatar-icon">👩‍💻</div>
-                        </div>
-                        <div class="patient-name">Amanda</div>
-                        <div class="patient-preview">Age: 38 • Uterine Fibroids</div>
-                        <div class="condition-indicator moderate">Moderate</div>
-                    </div>
-
-                    <div class="patient-card high-care" onclick="showPatientDetails('rachel')">
-                        <div class="patient-avatar">
-                            <div class="avatar-icon">👩‍⚕️</div>
-                        </div>
-                        <div class="patient-name">Rachel</div>
-                        <div class="patient-preview">Age: 35 • Cervical Dysplasia</div>
-                        <div class="condition-indicator high">High Priority</div>
-                    </div>
-
-                    <div class="patient-card high-care" onclick="showPatientDetails('linda')">
-                        <div class="patient-avatar">
-                            <div class="avatar-icon">👩‍🦳</div>
-                        </div>
-                        <div class="patient-name">Linda</div>
-                        <div class="patient-preview">Age: 52 • Breast CA Survivor</div>
-                        <div class="condition-indicator high">High Priority</div>
-                    </div>
-
-                    <div class="patient-card critical-care" onclick="showPatientDetails('jennifer')">
-                        <div class="patient-avatar">
-                            <div class="avatar-icon">👩‍🔬</div>
-                        </div>
-                        <div class="patient-name">Jennifer</div>
-                        <div class="patient-preview">Age: 45 • Complex Ovarian Cysts</div>
-                        <div class="condition-indicator critical">Critical</div>
-                    </div>
-
-                    <div class="patient-card critical-care" onclick="showPatientDetails('patricia')">
-                        <div class="patient-avatar">
-                            <div class="avatar-icon">👩‍🦱</div>
-                        </div>
-                        <div class="patient-name">Patricia</div>
-                        <div class="patient-preview">Age: 58 • Stage 4 Ovarian CA</div>
-                        <div class="condition-indicator critical">Critical</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Chatbot Page -->
-        <main class="main-content chatbot-page" id="chatbotPage" style="display: none;">
-            <div class="header">
-                <h1>Ask Cystella AI</h1>
-                <div class="ai-status">
-                    <span class="status-indicator online"></span>
-                    AI Assistant Online
-                </div>
-            </div>
-
-            <div class="chat-container">
-                <div class="patient-context" id="patientContext" style="display: none;">
-                    <div class="context-header">
-                        <h4>Patient Context</h4>
-                        <button class="clear-context-btn" onclick="clearPatientContext()">×</button>
-                    </div>
-                    <div class="context-content" id="contextContent">
-                        <!-- Patient context will be populated here -->
-                    </div>
-                </div>
-
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message ai-message">
-                        <div class="message-avatar">🤖</div>
-                        <div class="message-content">
-                            <p>Hello! I'm Cystella AI, your gynecological assistant. I can help you with:</p>
-                            <ul>
-                                <li>Treatment recommendations based on patient data</li>
-                                <li>Differential diagnosis suggestions</li>
-                                <li>Drug interactions and contraindications</li>
-                                <li>Latest research and guidelines</li>
-                                <li>Risk assessment and prognosis</li>
-                            </ul>
-                            <p>How can I assist you today?</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="quick-actions" id="quickActions">
-                    <button class="quick-action-btn" onclick="askQuickQuestion('treatment-options')">
-                        Treatment Options
-                    </button>
-                    <button class="quick-action-btn" onclick="askQuickQuestion('drug-interactions')">
-                        Drug Interactions
-                    </button>
-                    <button class="quick-action-btn" onclick="askQuickQuestion('risk-assessment')">
-                        Risk Assessment
-                    </button>
-                    <button class="quick-action-btn" onclick="askQuickQuestion('guidelines')">
-                        Latest Guidelines
-                    </button>
-                </div>
-
-                <div class="chat-input-container">
-                    <div class="chat-input-wrapper">
-                        <textarea 
-                            id="chatInput" 
-                            placeholder="Ask Cystella AI about patient care, treatments, or medical questions..."
-                            rows="3"
-                        ></textarea>
-                        <button class="send-btn" onclick="sendMessage()">
-                            <span class="send-icon">➤</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Patient Details Popup (Enhanced with AI button) -->
-    <div class="popup-overlay" id="popupOverlay">
-        <div class="popup-content">
-            <div class="popup-header">
-                <h3 id="popupPatientName">Patient Details</h3>
-                <button class="close-btn" onclick="closePopup()">&times;</button>
-            </div>
-            <div class="popup-body">
-                <div class="patient-avatar-large">
-                    <div class="avatar-icon" id="popupAvatar">👩</div>
-                </div>
-                <div class="patient-info">
-                    <!-- Same patient info sections as before -->
-                    <div class="info-section">
-                        <h4 class="section-header">Personal Information</h4>
-                        <div class="info-row">
-                            <span class="info-label">Full Name:</span>
-                            <span class="info-value" id="popupFullName">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Age:</span>
-                            <span class="info-value" id="popupAge">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Primary Condition:</span>
-                            <span class="info-value" id="popupCondition">-</span>
-                        </div>
-                    </div>
-
-                    <div class="info-section">
-                        <h4 class="section-header">Current Treatment</h4>
-                        <div class="info-row">
-                            <span class="info-label">Medications:</span>
-                            <span class="info-value" id="popupMedications">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Last Visit:</span>
-                            <span class="info-value" id="popupLastVisit">-</span>
-                        </div>
-                    </div>
-
-                    <div class="info-section">
-                        <h4 class="section-header">Clinical Notes</h4>
-                        <div class="info-row full-width">
-                            <span class="info-label">Recent Notes:</span>
-                            <div class="info-value notes-content" id="popupNotes">-</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="popup-footer">
-                <button class="btn btn-ai" onclick="askCystellaAboutPatient()">
-                    🤖 Ask Cystella
-                </button>
-                <button class="btn btn-primary" onclick="editPatient()">Edit Patient</button>
-                <button class="btn btn-secondary" onclick="scheduleAppointment()">Schedule Appointment</button>
-                <button class="btn btn-info" onclick="viewHistory()">View History</button>
-                <button class="btn btn-warning" onclick="orderTests()">Order Tests</button>
-            </div>
+  <!-- Popup -->
+  <div id="popupOverlay" class="popup-overlay">
+    <div class="popup-body">
+      <div class="patient-avatar-large">
+        <div class="avatar-icon" id="popupAvatar">👤</div>
+      </div>
+      <div class="patient-info">
+        <div class="info-section">
+          <h4>Personal Information</h4>
+          <div class="info-row">
+            <span class="info-label">First Name:</span>
+            <span class="info-value" id="popupFirstName">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Last Name:</span>
+            <span class="info-value" id="popupLastName">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value" id="popupEmail">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Contact:</span>
+            <span class="info-value" id="popupContact">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Date of Birth:</span>
+            <span class="info-value" id="popupDOB">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Notes:</span>
+            <span class="info-value" id="popupNotes">-</span>
+          </div>
         </div>
+        <button class="message-btn" onclick="goToChat()">💬 Message Patient</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Global variables
-        let currentPatientContext = null;
-        let chatHistory = [];
+  <script>
+    let patientsData = {};
+    let currentPatientKey = null;
 
-        // Patient data (same as before - abbreviated for space)
-        const patientsData = {
-            sarah: {
-                fullName: "Sarah Elizabeth Johnson",
-                age: 28,
-                condition: "Routine Annual Gynecological Exam",
-                medications: "Oral contraceptive (Yasmin), Multivitamin",
-                lastVisit: "June 1, 2025",
-                notes: "Healthy 28-year-old female presenting for routine annual exam. No complaints. Physical exam normal.",
-                avatar: "👩‍💼"
-            },
-            jessica: {
-                fullName: "Jessica Marie Rodriguez",
-                age: 24,
-                condition: "Polycystic Ovary Syndrome (PCOS)",
-                medications: "Metformin 1000mg BID, Spironolactone 100mg daily, Yasmin (cyclic)",
-                lastVisit: "May 20, 2025",
-                notes: "24-year-old with PCOS diagnosed 2 years ago. Recent labs show improved insulin sensitivity with metformin.",
-                avatar: "👩‍🎓"
-            },
-            patricia: {
-                fullName: "Patricia Rose Anderson",
-                age: 58,
-                condition: "Stage IV Ovarian Adenocarcinoma - Recurrent",
-                medications: "Carboplatin/Paclitaxel (cycle 4 of 6), Ondansetron PRN, Oxycodone 10mg q6h PRN",
-                lastVisit: "June 5, 2025 (Chemotherapy)",
-                notes: "58-year-old with stage IV high-grade serous ovarian adenocarcinoma. Disease recurrence noted on surveillance imaging March 2025.",
-                avatar: "👩‍🦱"
-            }
-            // Add other patients as needed
-        };
+    async function loadPatients() {
+      try {
+        const response = await fetch('/list_patients/');
+        const data = await response.json();
+        const container = document.getElementById('patientsContainer');
+        container.innerHTML = '';
 
-        // Navigation functions
-        function showPatientsPage() {
-            document.getElementById('patientsPage').style.display = 'block';
-            document.getElementById('chatbotPage').style.display = 'none';
-            
-            // Update nav active state
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            event.target.classList.add('active');
-        }
+        data.forEach((patient, index) => {
+          const key = `patient${index}`;
+          patientsData[key] = {
+            id: patient.id,
+            firstName: patient.first_name,
+            LastName: patient.last_name,
+            email: patient.email || '-',
+            contactno: patient.contactno|| '-',
+            date_of_birth: patient.date_of_birth || '-',
+            notes: patient.notes || '-',
+            avatar: patient.avatar || '👤'
+          };
 
-        function showChatbotPage() {
-            document.getElementById('patientsPage').style.display = 'none';
-            document.getElementById('chatbotPage').style.display = 'block';
-            
-            // Update nav active state
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-
-        // Patient popup functions
-        function showPatientDetails(patientKey) {
-            const patient = patientsData[patientKey];
-            const popup = document.getElementById('popupOverlay');
-            
-            // Store current patient for AI context
-            currentPatientContext = patient;
-            
-            // Populate popup
-            document.getElementById('popupPatientName').textContent = `${patient.fullName} - Medical Record`;
-            document.getElementById('popupAvatar').textContent = patient.avatar;
-            document.getElementById('popupFullName').textContent = patient.fullName;
-            document.getElementById('popupAge').textContent = patient.age;
-            document.getElementById('popupCondition').textContent = patient.condition;
-            document.getElementById('popupMedications').textContent = patient.medications;
-            document.getElementById('popupLastVisit').textContent = patient.lastVisit;
-            document.getElementById('popupNotes').textContent = patient.notes;
-            
-            popup.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closePopup() {
-            document.getElementById('popupOverlay').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // AI Chatbot functions
-        function askCystellaAboutPatient() {
-            if (!currentPatientContext) return;
-            
-            // Close popup and switch to chatbot
-            closePopup();
-            showChatbotPage();
-            
-            // Set patient context in chatbot
-            setPatientContext(currentPatientContext);
-            
-            // Auto-generate initial question
-            const initialQuestion = `I need help with ${currentPatientContext.fullName}, a ${currentPatientContext.age}-year-old patient with ${currentPatientContext.condition}. What are your recommendations?`;
-            
-            // Add the question to chat
-            addMessageToChat('user', initialQuestion);
-            
-            // Simulate AI response
-            setTimeout(() => {
-                generateAIResponse(initialQuestion);
-            }, 1000);
-        }
-
-        function setPatientContext(patient) {
-            const contextDiv = document.getElementById('patientContext');
-            const contextContent = document.getElementById('contextContent');
-            
-            contextContent.innerHTML = `
-                <div class="context-item">
-                    <strong>Patient:</strong> ${patient.fullName} (${patient.age} years old)
-                </div>
-                <div class="context-item">
-                    <strong>Condition:</strong> ${patient.condition}
-                </div>
-                <div class="context-item">
-                    <strong>Current Medications:</strong> ${patient.medications}
-                </div>
-                <div class="context-item">
-                    <strong>Last Visit:</strong> ${patient.lastVisit}
-                </div>
-            `;
-            
-            contextDiv.style.display = 'block';
-        }
-
-        function clearPatientContext() {
-            document.getElementById('patientContext').style.display = 'none';
-            currentPatientContext = null;
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            // Add user message
-            addMessageToChat('user', message);
-            input.value = '';
-            
-            // Generate AI response
-            setTimeout(() => {
-                generateAIResponse(message);
-            }, 1000);
-        }
-
-        function addMessageToChat(sender, message) {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            
-            const avatar = sender === 'user' ? '👨‍⚕️' : '🤖';
-            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            messageDiv.innerHTML = `
-                <div class="message-avatar">${avatar}</div>
-                <div class="message-content">
-                    <div class="message-text">${message}</div>
-                    <div class="message-time">${timestamp}</div>
-                </div>
-            `;
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function generateAIResponse(userMessage) {
-            let response = "";
-            
-            // Context-aware responses based on current patient
-            if (currentPatientContext) {
-                const condition = currentPatientContext.condition.toLowerCase();
-                
-                if (condition.includes('pcos')) {
-                    response = `Based on ${currentPatientContext.fullName}'s PCOS diagnosis, I recommend:
-
-**Treatment Optimization:**
-• Continue Metformin - excellent for insulin resistance
-• Spironolactone is appropriate for hirsutism
-• Consider adding Inositol supplements (2-4g daily)
-
-**Monitoring:**
-• HbA1c every 6 months
-• Lipid profile annually
-• Blood pressure monitoring
-• Weight management counseling
-
-**Fertility Considerations:**
-• Ovulation induction with Clomiphene if pregnancy desired
-• Consider Letrozole as first-line for ovulation induction
-
-Would you like specific dosing recommendations or information about newer PCOS treatments?`;
-                
-                } else if (condition.includes('ovarian') && condition.includes('stage iv')) {
-                    response = `For ${currentPatientContext.fullName}'s Stage IV ovarian cancer management:
-
-**Current Chemotherapy Assessment:**
-• Carboplatin/Paclitaxel is standard second-line therapy
-• Monitor CA-125 trends and imaging response
-• Consider dose modifications if toxicity develops
-
-**Supportive Care Priorities:**
-• Pain management optimization - current oxycodone may need adjustment
-• Nutritional support and antiemetic management
-• Palliative care integration for quality of life
-
-**Next Steps:**
-• Assess response after cycle 6
-• Consider maintenance therapy (PARP inhibitors if BRCA+)
-• Discuss goals of care and advance directives
-
-**Clinical Trials:**
-• Evaluate eligibility for immunotherapy combinations
-• Novel targeted therapies based on molecular profiling
-
-This is a complex case requiring multidisciplinary coordination. Would you like me to elaborate on any specific aspect?`;
-                
-                } else if (condition.includes('routine') || condition.includes('annual')) {
-                    response = `For ${currentPatientContext.fullName}'s routine care:
-
-**Preventive Care Checklist:**
-✅ Pap smear completed - normal results
-✅ Breast exam performed
-✅ Contraceptive counseling provided
-
-**Age-Appropriate Recommendations:**
-• Continue annual gynecological exams
-• Breast self-examination education
-• HPV vaccination if not completed
-• Preconception counseling if pregnancy planned
-
-**Health Maintenance:**
-• Maintain healthy BMI
-• Regular exercise routine
-• Adequate calcium/vitamin D intake
-• Consider genetic counseling if family history of breast/ovarian cancer
-
-**Next Visit Planning:**
-• Schedule in 12 months
-• Earlier if any concerning symptoms develop
-• Discuss any changes in sexual health or menstrual patterns
-
-This patient represents excellent preventive care engagement. Any specific concerns to address?`;
-                }
-            } else {
-                // General AI responses for non-patient specific questions
-                if (userMessage.toLowerCase().includes('treatment')) {
-                    response = "I can help with evidence-based treatment recommendations. Please provide patient details or specify the condition you'd like treatment guidance for.";
-                } else if (userMessage.toLowerCase().includes('drug interaction')) {
-                    response = "I can check for drug interactions and contraindications. Please specify the medications you'd like me to analyze.";
-                } else {
-                    response = "I'm here to help with gynecological care decisions. You can ask me about treatment options, drug interactions, risk assessments, or latest clinical guidelines. How can I assist you?";
-                }
-            }
-            
-            addMessageToChat('ai', response);
-        }
-
-        function askQuickQuestion(type) {
-            let question = "";
-            
-            switch(type) {
-                case 'treatment-options':
-                    question = currentPatientContext ? 
-                        `What are the current treatment options for ${currentPatientContext.condition}?` :
-                        "What are the latest treatment options for common gynecological conditions?";
-                    break;
-                case 'drug-interactions':
-                    question = currentPatientContext ?
-                        `Are there any drug interactions I should be aware of with ${currentPatientContext.fullName}'s current medications?` :
-                        "How do I check for drug interactions in gynecological medications?";
-                    break;
-                case 'risk-assessment':
-                    question = currentPatientContext ?
-                        `What is the risk assessment and prognosis for ${currentPatientContext.fullName}?` :
-                        "How do I perform risk assessment for gynecological conditions?";
-                    break;
-                case 'guidelines':
-                    question = "What are the latest clinical guidelines I should be aware of?";
-                    break;
-            }
-            
-            document.getElementById('chatInput').value = question;
-            sendMessage();
-        }
-
-        // Other existing functions
-        function editPatient() {
-            alert('Edit Patient functionality');
-            closePopup();
-        }
-
-        function scheduleAppointment() {
-            alert('Schedule Appointment functionality');
-            closePopup();
-        }
-
-        function viewHistory() {
-            alert('View History functionality');
-            closePopup();
-        }
-
-        function orderTests() {
-            alert('Order Tests functionality');
-            closePopup();
-        }
-
-        // Event listeners
-        document.getElementById('chatInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
+          const card = document.createElement('div');
+          card.className = 'patient-card';
+          card.innerHTML = `
+            <div class="avatar-icon">${patientsData[key].avatar}</div>
+            <div class="patient-name">${patientsData[key].firstName}</div>
+          `;
+          card.onclick = () => showPatientDetails(key);
+          container.appendChild(card);
         });
+      } catch (error) {
+        console.error('Failed to load patients:', error);
+      }
+    }
 
-        document.getElementById('popupOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closePopup();
-            }
-        });
+    function showPatientDetails(key) {
+      currentPatientKey = key;
+      const patient = patientsData[key];
+      document.getElementById('popupAvatar').textContent = patient.avatar;
+      document.getElementById('popupFirstName').textContent = patient.firstName;
+      document.getElementById('popupLastName').textContent = patient.LastName;
+      document.getElementById('popupEmail').textContent = patient.email;
+      document.getElementById('popupContact').textContent = patient.contactno;
+      document.getElementById('popupDOB').textContent = patient.date_of_birth;
+      document.getElementById('popupNotes').textContent = patient.notes;
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closePopup();
-            }
-        });
-    </script>
+      document.getElementById('popupOverlay').classList.add('active');
+    }
+
+    function goToChat() {
+      const patient = patientsData[currentPatientKey];
+      window.location.href = `/message/${patient.firstName}/`;  // You can use email too
+    }
+
+    window.onload = loadPatients;
+  </script>
+
 </body>
 </html>

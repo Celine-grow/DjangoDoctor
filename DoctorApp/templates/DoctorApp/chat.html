@@ -3,386 +3,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cystella - Chat</title>
+    <title>Message Patient - {{ patient.first_name }}</title>
     <link rel="stylesheet" href="{% static 'css/chat.css' %}">
 </head>
 <body>
-   
 
-    <div class="container">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="logo">
-                <div class="logo-icon">C</div>
-                <span class="logo-text">Cystella</span>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="{% url 'dashboard' %}" class="nav-link active">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'patients' %}" class="nav-link">Patients</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'chat' %}" class="nav-link">Chat</a>
-                </li>
-                 <li class="nav-item">
-                    <a href="{% url 'cystela' %}" class="nav-link">Ask Cystella</a>
-                </li>
-                 <li class="nav-item">
-                    <a href="{% url 'settings' %}" class="nav-link">Settings</a>
-                </li>
-            </ul>
-        </nav>
+<div class="container">
+    <div class="header">
+        <h2>Send a Message to <span style="color:#007bff">{{ patient.first_name }}</span></h2>
+    </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-             <!-- Notifications Bar -->
-    <div class="notifications-bar" id="notificationsBar">
-        <div class="notification-item">
-            <span class="notification-icon">🔔</span>
-            <span class="notification-text">New lab results available for Sarah Johnson</span>
-            <button class="notification-close" onclick="closeNotification(this)">&times;</button>
+    <!-- Optional: Simulated Previous Message -->
+    
+    <div class="message-box">
+        <p><strong>You:</strong> Please take your meds 3 times a day.</p>
+        <small>Sent on: 2024-06-26 14:30</small>
+    </div>
+    
+
+    <form method="Post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Write your message to the patient..." required></textarea>
         </div>
+
+        <div class="form-group">
+            <label for="document">Upload Document (Optional)</label>
+            <input type="file" id="document" name="document" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
+        </div>
+
+        <button type="submit" class="submit-btn">Send Message</button>
+    </form>
+
+    <div class="footer-note">
+        Note: The patient can view but cannot reply to this message.
     </div>
-            <!-- Header -->
-            <div class="header">
-                <h1>Chat</h1>
-                <div class="date">June 9, 2025</div>
-            </div>
+</div>
 
-            <!-- Chat Content Container -->
-            <div class="content-container">
-                <!-- Chat List Section -->
-                <div class="chat-list-section">
-                    <div class="section-header">
-                        <h3>All Chats</h3>
-                        <button class="new-chat-btn">+ New Chat</button>
-                    </div>
-                    
-                    <div class="chat-list-container">
-                        <div class="chat-item active" onclick="selectChat('maryleen1')">
-                            <div class="chat-avatar">M</div>
-                            <div class="chat-info">
-                                <div class="chat-name">Maryleen Boyani</div>
-                                <div class="chat-preview">Medical report shared</div>
-                                <div class="chat-time">2:30 PM</div>
-                            </div>
-                            <div class="unread-badge">2</div>
-                        </div>
-                        
-                        <div class="chat-item" onclick="selectChat('sarah')">
-                            <div class="chat-avatar">S</div>
-                            <div class="chat-info">
-                                <div class="chat-name">Sarah Johnson</div>
-                                <div class="chat-preview">Thank you for the consultation</div>
-                                <div class="chat-time">1:15 PM</div>
-                            </div>
-                        </div>
-                        
-                        <div class="chat-item" onclick="selectChat('jessica')">
-                            <div class="chat-avatar">J</div>
-                            <div class="chat-info">
-                                <div class="chat-name">Jessica Rodriguez</div>
-                                <div class="chat-preview">Appointment confirmation</div>
-                                <div class="chat-time">11:45 AM</div>
-                            </div>
-                        </div>
-                        
-                        <div class="chat-item" onclick="selectChat('maria')">
-                            <div class="chat-avatar">M</div>
-                            <div class="chat-info">
-                                <div class="chat-name">Maria Santos</div>
-                                <div class="chat-preview">Lab results inquiry</div>
-                                <div class="chat-time">Yesterday</div>
-                            </div>
-                            <div class="unread-badge">1</div>
-                        </div>
-                        
-                        <div class="chat-item" onclick="selectChat('amanda')">
-                            <div class="chat-avatar">A</div>
-                            <div class="chat-info">
-                                <div class="chat-name">Amanda Thompson</div>
-                                <div class="chat-preview">Follow-up questions</div>
-                                <div class="chat-time">Yesterday</div>
-                            </div>
-                        </div>
-
-                        <div class="chat-item" onclick="selectChat('rachel')">
-                            <div class="chat-avatar">R</div>
-                            <div class="chat-info">
-                                <div class="chat-name">Rachel Davis</div>
-                                <div class="chat-preview">Test results discussion</div>
-                                <div class="chat-time">2 days ago</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat Messages Section -->
-                <div class="chat-messages-section">
-                    <!-- Chat Header -->
-                    <div class="chat-header-info">
-                        <div class="current-chat-details">
-                            <div class="current-chat-avatar">M</div>
-                            <div class="current-chat-info">
-                                <div class="current-chat-name">Maryleen Boyani</div>
-                                <div class="current-chat-status">
-                                    <span class="status-dot online"></span>
-                                    Online
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chat-actions">
-                            <button class="chat-action-btn" title="Video Call">📹</button>
-                            <button class="chat-action-btn" title="Voice Call">📞</button>
-                            <button class="chat-action-btn" title="Patient Info">👤</button>
-                            <button class="chat-action-btn" title="More Options">⋯</button>
-                        </div>
-                    </div>
-
-                    <!-- Messages Container -->
-                    <div class="messages-container" id="messagesContainer">
-                        <!-- Sample Messages -->
-                        <div class="message received">
-                            <div class="message-avatar">M</div>
-                            <div class="message-content">
-                                <div class="message-text">Hello Doctor, I hope you're doing well. I wanted to share my latest medical report with you.</div>
-                                <div class="message-time">2:25 PM</div>
-                            </div>
-                        </div>
-
-                        <div class="message sent">
-                            <div class="message-content">
-                                <div class="message-text">Hello Maryleen! Thank you for reaching out. I'd be happy to review your report.</div>
-                                <div class="message-time">2:27 PM</div>
-                            </div>
-                        </div>
-
-                        <!-- File Share Message -->
-                        <div class="message received">
-                            <div class="message-avatar">M</div>
-                            <div class="message-content">
-                                <div class="file-share">
-                                    <div class="file-icon">📄</div>
-                                    <div class="file-info">
-                                        <div class="file-name">Medical report 2nd March 2025</div>
-                                        <div class="file-size">2.4 MB • PDF</div>
-                                    </div>
-                                    <button class="file-download" title="Download">⬇</button>
-                                </div>
-                                <div class="message-time">2:30 PM</div>
-                            </div>
-                        </div>
-
-                        <div class="message sent">
-                            <div class="message-content">
-                                <div class="message-text">Thank you for sharing the report. I'll review it and get back to you with my recommendations.</div>
-                                <div class="message-time">2:32 PM</div>
-                            </div>
-                        </div>
-
-                        <!-- System Message -->
-                        <div class="message system">
-                            <div class="system-message">
-                                <span class="system-icon">🔒</span>
-                                This conversation is encrypted and HIPAA compliant
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Chat Input -->
-                    <div class="chat-input-section">
-                        <div class="chat-input-wrapper">
-                            <button class="attachment-btn" title="Attach File">📎</button>
-                            <input 
-                                type="text" 
-                                id="messageInput" 
-                                placeholder="Send a message to Maryleen Boyani now"
-                                class="message-input"
-                            >
-                            <button class="voice-btn" title="Voice Message">🎤</button>
-                            <button class="send-btn" onclick="sendMessage()" title="Send Message">
-                                <span class="send-icon">➤</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        // Navigation functionality
-        function showPage(pageName) {
-            // Remove active class from all nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // Add active class to clicked nav link
-            event.target.classList.add('active');
-            
-            // Update header title
-            const headerTitle = document.querySelector('.header h1');
-            const pageNames = {
-                'dashboard': 'Dashboard',
-                'patients': 'Patients',
-                'calendar': 'Calendar',
-                'notifications': 'Notifications',
-                'chat': 'Chat',
-                'ai-assistant': 'Ask Cystella AI'
-            };
-            
-            headerTitle.textContent = pageNames[pageName] || 'Chat';
-            
-            // Here you would typically load different page content
-            // For demo purposes, we'll just show an alert for non-chat pages
-            if (pageName !== 'chat') {
-                alert(`Navigating to ${pageNames[pageName]} page`);
-            }
-        }
-
-        // Chat functionality
-        function selectChat(chatId) {
-            // Remove active class from all chat items
-            document.querySelectorAll('.chat-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Add active class to selected chat
-            event.currentTarget.classList.add('active');
-            
-            // Remove unread badge from selected chat
-            const unreadBadge = event.currentTarget.querySelector('.unread-badge');
-            if (unreadBadge) {
-                unreadBadge.remove();
-            }
-            
-            // Update chat content based on selection
-            updateChatContent(chatId);
-        }
-
-        function updateChatContent(chatId) {
-            const chatData = {
-                'maryleen1': { name: 'Maryleen Boyani', status: 'Online', avatar: 'M' },
-                'sarah': { name: 'Sarah Johnson', status: 'Last seen 2 hours ago', avatar: 'S' },
-                'jessica': { name: 'Jessica Rodriguez', status: 'Online', avatar: 'J' },
-                'maria': { name: 'Maria Santos', status: 'Last seen 1 hour ago', avatar: 'M' },
-                'amanda': { name: 'Amanda Thompson', status: 'Online', avatar: 'A' },
-                'rachel': { name: 'Rachel Davis', status: 'Last seen 3 hours ago', avatar: 'R' }
-            };
-            
-            const chat = chatData[chatId];
-            if (chat) {
-                document.querySelector('.current-chat-name').textContent = chat.name;
-                document.querySelector('.current-chat-avatar').textContent = chat.avatar;
-                document.querySelector('.current-chat-status').innerHTML = `
-                    <span class="status-dot ${chat.status === 'Online' ? 'online' : 'offline'}"></span>
-                    ${chat.status}
-                `;
-                document.getElementById('messageInput').placeholder = `Send a message to ${chat.name} now`;
-            }
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            // Add message to chat
-            addMessageToChat('sent', message);
-            input.value = '';
-            
-            // Simulate response after a delay
-            setTimeout(() => {
-                addMessageToChat('received', 'Thank you for your message. I appreciate your care and attention.');
-            }, 1500);
-        }
-
-        function addMessageToChat(type, text) {
-            const messagesContainer = document.getElementById('messagesContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            
-            const currentTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            if (type === 'received') {
-                const currentAvatar = document.querySelector('.current-chat-avatar').textContent;
-                messageDiv.innerHTML = `
-                    <div class="message-avatar">${currentAvatar}</div>
-                    <div class="message-content">
-                        <div class="message-text">${text}</div>
-                        <div class="message-time">${currentTime}</div>
-                    </div>
-                `;
-            } else {
-                messageDiv.innerHTML = `
-                    <div class="message-content">
-                        <div class="message-text">${text}</div>
-                        <div class="message-time">${currentTime}</div>
-                    </div>
-                `;
-            }
-            
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        // Notifications functionality
-        function closeNotification(button) {
-            const notification = button.parentElement;
-            notification.style.animation = 'slideUp 0.3s ease-out forwards';
-            setTimeout(() => {
-                notification.remove();
-                
-                // Hide notifications bar if no notifications left
-                const notificationsBar = document.getElementById('notificationsBar');
-                if (notificationsBar.children.length === 0) {
-                    notificationsBar.style.display = 'none';
-                }
-            }, 300);
-        }
-
-        // Add new notification function
-        function addNotification(text, icon = '🔔') {
-            const notificationsBar = document.getElementById('notificationsBar');
-            const notificationDiv = document.createElement('div');
-            notificationDiv.className = 'notification-item';
-            notificationDiv.innerHTML = `
-                <span class="notification-icon">${icon}</span>
-                <span class="notification-text">${text}</span>
-                <button class="notification-close" onclick="closeNotification(this)">&times;</button>
-            `;
-            
-            notificationsBar.appendChild(notificationDiv);
-            notificationsBar.style.display = 'block';
-            
-            // Auto-remove after 10 seconds
-            setTimeout(() => {
-                if (notificationDiv.parentElement) {
-                    closeNotification(notificationDiv.querySelector('.notification-close'));
-                }
-            }, 10000);
-        }
-
-        // Enter key to send message
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        // Demo: Add random notifications
-        setTimeout(() => {
-            addNotification('Appointment reminder: Sarah Johnson at 3:00 PM', '📅');
-        }, 5000);
-
-        setTimeout(() => {
-            addNotification('New message from Jennifer Martinez', '💬');
-        }, 8000);
-    </script>
 </body>
 </html>

@@ -30,3 +30,18 @@ class DoctorRegistrationForm(forms.Form):
 class DoctorLoginForm(forms.Form):
     email = forms.EmailField(required=True)
     password = forms.CharField(widget=forms.PasswordInput, required=True)
+
+
+
+class DoctorProfileForm(forms.Form):
+    first_name = forms.CharField(max_length=50, required=True)
+    last_name = forms.CharField(max_length=50, required=True)
+    email = forms.EmailField(required=True)
+    contact = forms.CharField(max_length=15, required=True)
+    specialization = forms.CharField(required=True)
+    license_number = forms.CharField(required=True)
+    years_of_experience = forms.IntegerField(required=True)
+    qualifications = forms.CharField(
+        widget=forms.Textarea,
+        help_text="Enter each qualification on a new line"
+    )

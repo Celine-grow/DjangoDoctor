@@ -1,40 +1,9 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cystella Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/dash.css' %}">
-</head>
-<body>
-    <div class="container">
-        <nav class="sidebar">
-            <div class="logo">
-                <div class="logo-icon">C</div>
-                <span class="logo-text">Cystella</span>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="{% url 'dashboard' %}" class="nav-link active">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'patients' %}" class="nav-link">Patients</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'chat' %}" class="nav-link">Chat</a>
-                </li>
-                 <li class="nav-item">
-                    <a href="{% url 'cystela' %}" class="nav-link">Ask Cystella</a>
-                </li>
-                 <li class="nav-item">
-                    <a href="{% url 'settings' %}" class="nav-link">Settings</a>
-                </li>
-            </ul>
-        </nav>
-        
-        <main class="main-content">
-            <div class="header">
+{% extends 'DoctorApp/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="header">
                 <h1>Dashboard</h1>
                 <div class="date">June 9, 2025</div>
             </div>
@@ -124,5 +93,4 @@
             </div>
         </main>
     </div>
-</body>
-</html>
+{% endblock %}

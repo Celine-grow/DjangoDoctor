@@ -1,88 +1,231 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .forms import DoctorRegistrationForm, DoctorLoginForm
+from .forms import DoctorRegistrationForm,DoctorProfileForm, DoctorLoginForm
 from DoctorApp.models import Doctor
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
+import requests
+from bson import ObjectId
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.core.files.storage import FileSystemStorage
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Patient
 
-# def register_doctor(request):
-#     if request.method == 'POST':
-#         form = DoctorRegistrationForm(request.POST)
-#         if form.is_valid():
-#             # Check if email or license number already exists
-#             if Doctor.objects.filter(email=form.cleaned_data['email']).first():
-#                 messages.error(request, 'Email already registered')
-#                 return redirect('register_doctor')
+def register_doctor(request):
+    if request.method == 'POST':
+        form = DoctorRegistrationForm(request.POST)
+        if form.is_valid():
+            # Check if email or license number already exists
+            if Doctor.objects.filter(email=form.cleaned_data['email']).first():
+                messages.error(request, 'Email already registered')
+                return redirect('register_doctor')
                 
-#             if Doctor.objects.filter(license_number=form.cleaned_data['license_number']).first():
-#                 messages.error(request, 'License number already registered')
-#                 return redirect('register_doctor')
+            if Doctor.objects.filter(license_number=form.cleaned_data['license_number']).first():
+                messages.error(request, 'License number already registered')
+                return redirect('register_doctor')
             
-#             # Create an instance of the Doctor
-#             doctor = Doctor(
-#                 first_name=form.cleaned_data['first_name'],
-#                 last_name=form.cleaned_data['last_name'],
-#                 email=form.cleaned_data['email'],
-#                 contact=form.cleaned_data['contact'],
-#                 license_number=form.cleaned_data['license_number'],
-#                 specialization=form.cleaned_data['specialization'],
-#                 years_of_experience=form.cleaned_data['years_of_experience'],
-#                 qualifications=[q.strip() for q in form.cleaned_data['qualifications'].split('\n') if q.strip()]
-#             )
-#             doctor.set_password(form.cleaned_data['password'])
-#             doctor.save()
+            # Create an instance of the Doctor
+            doctor = Doctor(
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name'],
+                email=form.cleaned_data['email'],
+                contact=form.cleaned_data['contact'],
+                license_number=form.cleaned_data['license_number'],
+                specialization=form.cleaned_data['specialization'],
+                years_of_experience=form.cleaned_data['years_of_experience'],
+                qualifications=[q.strip() for q in form.cleaned_data['qualifications'].split('\n') if q.strip()]
+            )
+            doctor.set_password(form.cleaned_data['password'])
+            doctor.save()
             
-#             messages.success(request, 'Registration successful!')
-#             return redirect('login_doctor')
-#     else:
-#         form = DoctorRegistrationForm()
+            messages.success(request, 'Registration successful!')
+            return redirect('login_doctor')
+    else:
+        form = DoctorRegistrationForm()
     
-#     return render(request, 'DoctorApp/register.html', {'form': form})
+    return render(request, 'DoctorApp/register.html', {'form': form})
 
-# def login_doctor(request):
-#     if request.method == 'POST':
-#         form = DoctorLoginForm(request.POST)
-#         if form.is_valid():
-#             email = form.cleaned_data['email']
-#             password = form.cleaned_data['password']
+def login_doctor(request):
+    if request.method == 'POST':
+        form = DoctorLoginForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
             
-#             doctor = Doctor.objects.filter(email=email).first()
+            doctor = Doctor.objects.filter(email=email).first()
             
-#             if doctor and doctor.check_password(password):
-#                 request.session['doctor_id'] = str(doctor.id)
-#                 messages.success(request, 'Login successful!')
-#                 return redirect('doctor_dashboard')
-#             else:
-#                 messages.error(request, 'Invalid email or password')
-#                 return redirect('login_doctor')
-#     else:
-#         form = DoctorLoginForm()
+            if doctor and doctor.check_password(password):
+                request.session['doctor_id'] = str(doctor.id)
+                messages.success(request, 'Login successful!')
+                return redirect('dashboard')
+            else:
+                messages.error(request, 'Invalid email or password')
+                return redirect('login_doctor')
+    else:
+        form = DoctorLoginForm()
     
-#     return render(request, 'DoctorApp/login.html', {'form': form})
+    return render(request, 'DoctorApp/login.html', {'form': form})
 
-# #the views that should only be executed if doctor is logged in
+
+
+
+def message_patient(request, patient_name):
+    # Get doctor from session
+    doctor_id = request.session.get('doctor_id')
+
+    if not doctor_id:
+        messages.error(request, "You must be logged in as a doctor to send messages.")
+        return redirect('doctor_login')
+
+    try:
+        doctor = Doctor.objects.get(id=ObjectId(doctor_id))
+    except Doctor.DoesNotExist:
+        messages.error(request, "Logged-in doctor not found.")
+        return redirect('doctor_login')
+
+    # 🧠 GET patient info to pass to template
+    try:
+        patient = Patient.objects.get(first_name=patient_name)
+    except Patient.DoesNotExist:
+        messages.error(request, "Patient not found.")
+        return redirect('dashboard')  # Or wherever
+
+    if request.method == 'POST':
+        print("🟢 POST request received")
+        print("📝 Message:", request.POST.get('message'))
+        message_text = request.POST.get('message')
+        doctor_name = f"{doctor.first_name} {doctor.last_name}"
+        document_file = request.FILES.get('document')
+        document_url = ''
+
+        if document_file:
+            fs = FileSystemStorage()
+            filename = fs.save(document_file.name, document_file)
+            document_url = request.build_absolute_uri(fs.url(filename))
+
+        payload = {
+            "patient_email": patient.email,
+            "doctor_name": doctor_name,
+            "message": message_text,
+            "document_url": document_url
+        }
+
+        api_url = "http://192.168.8.101:8000/api/auth/receive_message/"  
+
+        try:
+            response = requests.post(api_url, json=payload, timeout=5)
+            print("📡 Response status:", response.status_code)
+            print("📡 Response body:", response.text)
+            if response.status_code == 201:
+                messages.success(request, "Message sent successfully!")
+            else:
+                messages.error(request, f"API error: {response.json()}")
+        except Exception as e:
+            messages.error(request, f"Could not connect to patient system: {e}")
+
+        return redirect('message_patient', patient_name=patient_name)
+
+    # GET request - show chat page with patient info
+    return render(request, 'DoctorApp/chat.html', {
+        'patient_email': patient_name,
+        'doctor_name': f"{doctor.first_name} {doctor.last_name}",
+        'patient': patient  # ✅ pass full patient object
+    })
+@csrf_exempt
+def add_patient(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            patient = Patient.objects.create(
+                first_name=data.get('first_name'),
+                last_name=data.get('last_name'),
+                contactno=data.get('contactno'),
+                email=data.get('email'),
+                date_of_birth=data.get('date_of_birth')
+            )
+            return JsonResponse({'message': 'Patient added successfully'}, status=201)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def list_patients(request):
+    if request.method == 'GET':
+        patients = Patient.objects.all()
+        data = list(patients.values())  # returns list of dicts
+        return JsonResponse(data, safe=False)
+    
+
+#the views that should only be executed if doctor is logged in
+@login_required
+def doctor_dashboard(request):
+    doctor_id = request.session.get('doctor_id')
+    doctor = Doctor.objects.get(id=doctor_id)
+    patients = Patient.objects.all() 
+    return render(request, 'DoctorApp/dashboard.html', {'doctor': doctor,'patients': patients})
+
+def logout_doctor(request):
+    if 'doctor_id' in request.session:
+        del request.session['doctor_id']
+    messages.success(request, 'You have been logged out')
+    return redirect('login_doctor')
 # @login_required
-# def doctor_dashboard(request):
-#     doctor_id = request.session.get('doctor_id')
-#     doctor = Doctor.objects.get(id=doctor_id)
-#     return render(request, 'DoctorApp/dashboard.html', {'doctor': doctor})
-
-# def logout_doctor(request):
-#     if 'doctor_id' in request.session:
-#         del request.session['doctor_id']
-#     messages.success(request, 'You have been logged out')
-#     return redirect('login_doctor')
-
+def settings_view(request):
+    doctor_id = request.session.get('doctor_id')
+    if not doctor_id:
+        messages.error(request, "You must be logged in as a doctor to access settings.")
+        return redirect('login_doctor')
+    try:
+        doctor = Doctor.objects.get(id=doctor_id)
+    except Doctor.DoesNotExist:
+        messages.error(request, "Doctor profile not found")
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = DoctorProfileForm(request.POST)
+        if form.is_valid():
+            # Update doctor fields manually
+            doctor.first_name = form.cleaned_data['first_name']
+            doctor.last_name = form.cleaned_data['last_name']
+            doctor.email = form.cleaned_data['email']
+            doctor.contact = form.cleaned_data['contact']
+            doctor.specialization = form.cleaned_data['specialization']
+            doctor.license_number = form.cleaned_data['license_number']
+            doctor.years_of_experience = form.cleaned_data['years_of_experience']
+            doctor.qualifications = form.cleaned_data['qualifications'].split('\n')
+            
+            try:
+                doctor.save()
+                messages.success(request, 'Profile updated successfully!')
+                return redirect('settings')
+            except Exception as e:
+                messages.error(request, f'Error saving profile: {str(e)}')
+    else:
+        initial_data = {
+            'first_name': doctor.first_name,
+            'last_name': doctor.last_name,
+            'email': doctor.email,
+            'contact': doctor.contact,
+            'specialization': doctor.specialization,
+            'license_number': doctor.license_number,
+            'years_of_experience': doctor.years_of_experience,
+            'qualifications': '\n'.join(doctor.qualifications) if doctor.qualifications else '',
+        }
+        form = DoctorProfileForm(initial=initial_data)
+    
+    return render(request, 'DoctorApp/settings.html', {'form': form, 'doctor': doctor})
 
 
 # these are the routes ive set up
 
-def dashboard(request):
-    return render(request, 'DoctorApp/dashboard.html')  
+# def dashboard(request):
+#     return render(request, 'DoctorApp/dashboard.html')  
 
-def login(request):
-    return render(request, 'DoctorApp/login2.html')  
+# def login(request):
+#     return render(request, 'DoctorApp/login2.html')  
 
 def patients(request):
     return render(request, 'DoctorApp/patients.html')  
@@ -93,7 +236,7 @@ def chat(request):
 def cystela(request):
     return render(request, 'DoctorApp/cystela.html')
   
-def settings(request):
-    return render(request, 'DoctorApp/settings.html')
+# def settings(request):
+#     return render(request, 'DoctorApp/settings.html')
   
  
