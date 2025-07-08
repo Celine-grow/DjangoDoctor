@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html>
+<head>
+    <title>Simple Form</title>
+    <link rel="stylesheet" href="{% static 'css/cystella.css' %}">
+</head>
+<body>
+    
+    <form method="POST" class="form-container">
+        {% csrf_token %}
+        <h2>Patient Details Info</h2>
+        <label >Patients Name:</label><br>
+        <input type="text" name="name"><br><br>
+
+        <label >Age of patient:</label><br>
+        <input type="number" name="age"><br><br>
+
+        <label >Cyst size in cm:</label><br>
+        <input type="number" name="cystsize"><br><br>
+
+        <label >Menopause status:</label><br>
+        <select name="menopause_status">
+            <option value="" name="">--Select--</option>
+            <option value="" name="">Postmenopause</option>
+            <option value="" name="">Premenopause</option>
+            
+        </select>
+        <br><br>
+        <label >CA 125 levels:</label><br>
+        <input type="number" name="ca_levels"><br><br>
+
+        <label >Ultrasound features:</label><br>
+        <select name="Ultrasound_features">
+            <option value="" name="">--Select--</option>
+            <option value="" name="">Solid mass </option>
+            <option value="" name="">Simple Cyst </option>
+            <option value="" name="">Complex Cyst</option>
+            <option value="" name="">Septated Cyst</option>
+            <option value="" name="">Hemorrhagic Cyst</option>
+        </select>
+        <br><br>
+        
+       
+        <label >Description:</label><br>
+        <textarea name="description" rows="5" cols="40" placeholder="Write something..."></textarea><br><br>
+
+        <label >Region:</label><br>
+        <select name="region">
+            <option value="">--Select Region--</option>
+            <option value="Central">Central</option>
+            <option value="Coast">Coast</option>
+            <option value="Eastern">Eastern</option>
+            <option value="Nairobi">Nairobi</option>
+            <option value="North Eastern">North Eastern</option>
+            <option value="Nyanza">Nyanza</option>
+            <option value="Rift Valley">Rift Valley</option>
+            <option value="Western">Western</option>
+        </select><br><br>
+        <input type="submit" value="Submit">
+        <div class="button-row">
+            <input type="submit" value="Predict">
+            <input type="submit" value="Generate Costs">
+            <input type="submit" value="Inventory">
+          </div>
+        
+        
+    </form>
+
+    {% if submitted %}
+        <p class=".form-container p">Thank you, {{ name }}! We received your submission.</p>
+    {% endif %}
+</body>
+</html>
