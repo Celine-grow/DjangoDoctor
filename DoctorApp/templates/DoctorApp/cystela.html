@@ -47,21 +47,27 @@
         <textarea name="description" rows="5" cols="40" placeholder="Write something..."></textarea><br><br>
 
         <label >Region:</label><br>
-        <select name="region">
+        <select name="region" id="region">
             <option value="">--Select Region--</option>
-            <option value="Central">Central</option>
-            <option value="Coast">Coast</option>
-            <option value="Eastern">Eastern</option>
+            <option value="Eldoret">Eldoret</option>
+            <option value="Loitoktok">Loitoktok</option>
+            <option value="Mombasa">Mombasa</option>
             <option value="Nairobi">Nairobi</option>
-            <option value="North Eastern">North Eastern</option>
-            <option value="Nyanza">Nyanza</option>
-            <option value="Rift Valley">Rift Valley</option>
-            <option value="Western">Western</option>
+            <option value="Kisumu">Kisumu</option>
+            <option value="Machakos">Machakos</option>
+            <option value="Embu">Embu</option>
+            <option value="Nakuru">Nakuru</option>
+            <option value="Moi">Moi</option>
+            <option value="Pumwani">Pumwani</option>
+            <option value="Garrisa">Garrisa</option>
+            <option value="Kitale">Kitale</option>
+            <option value="Kakamega">Kakamega</option>
+            <option value="Kericho">Kericho</option>
         </select><br><br>
         <input type="submit" value="Submit">
         <div class="button-row">
             <input type="submit" value="Predict">
-            <input type="submit" value="Generate Costs">
+            <input type="submit" onclick="generateReport()" value="Generate Treatment Report">
             <input type="submit" value="Inventory">
           </div>
         
@@ -71,5 +77,29 @@
     {% if submitted %}
         <p class=".form-container p">Thank you, {{ name }}! We received your submission.</p>
     {% endif %}
+    <script>
+        async function generateReport() {
+            const response = await fetch('http://localhost:8000/generate_report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                region: document.getElementById('region').value,
+                management_option: document.getElementById('management').value //Awaiting input from he other  model
+            })
+            });
+            
+            if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'healthcare_report.pdf';
+            a.click();
+            } else {
+            alert(await response.text());
+            }
+        }
+        </script>
+
 </body>
 </html>
