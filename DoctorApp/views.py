@@ -233,10 +233,60 @@ def patients(request):
 def chat(request):
     return render(request, 'DoctorApp/chat.html')  
 
+
 def cystela(request):
     return render(request, 'DoctorApp/cystela.html')
-  
-# def settings(request):
-#     return render(request, 'DoctorApp/settings.html')
+
+from pycaret.regression import load_model, predict_model
+
+# ✅ Load the model once when views.py is loaded
+growth_model = load_model('DoctorApp/growth_rate_model')  # adjust path if needed
+
+@csrf_exempt
+def predict_growth_rate(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+
+            # ✅ Build DataFrame for prediction
+            df = pd.DataFrame([{
+                'age': data['age'],
+                'size': data['size'],
+                'ca125': data['ca125'],
+                'menopause': data['menopause'],
+                'ultrasound': data['ultrasound'],
+                'symptoms': data['symptoms'],
+                'management': data.get('management', 'awaiting'),
+                'region': data['region']
+            }])
+
+            # ✅ Predict with PyCaret model
+            result = predict_model(growth_model, data=df)
+            prediction = float(result['prediction_label'].iloc[0])
+
+            # ✅ Classify prediction
+            def classify(rate):
+                if rate <= 0:
+                    return 'Shrinking'
+                elif rate < 0.012:
+                    return 'Stable'
+                elif rate < 0.020:
+                    return 'Moderate-growing'
+                else:
+                    return 'Fast-growing'
+
+            category = classify(prediction)
+
+            return JsonResponse({
+                'prediction': round(prediction, 4),
+                'category': category
+            })
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+
   
  
