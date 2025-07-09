@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+import pandas as pd
 from .forms import DoctorRegistrationForm,DoctorProfileForm, DoctorLoginForm
 from DoctorApp.models import Doctor
 from django.contrib.auth import login as auth_login
@@ -23,11 +24,11 @@ def register_doctor(request):
             if Doctor.objects.filter(email=form.cleaned_data['email']).first():
                 messages.error(request, 'Email already registered')
                 return redirect('register_doctor')
-                
+
             if Doctor.objects.filter(license_number=form.cleaned_data['license_number']).first():
                 messages.error(request, 'License number already registered')
                 return redirect('register_doctor')
-            
+
             # Create an instance of the Doctor
             doctor = Doctor(
                 first_name=form.cleaned_data['first_name'],
@@ -41,12 +42,12 @@ def register_doctor(request):
             )
             doctor.set_password(form.cleaned_data['password'])
             doctor.save()
-            
+
             messages.success(request, 'Registration successful!')
             return redirect('login_doctor')
     else:
         form = DoctorRegistrationForm()
-    
+
     return render(request, 'DoctorApp/register.html', {'form': form})
 
 def login_doctor(request):
@@ -55,9 +56,9 @@ def login_doctor(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            
+
             doctor = Doctor.objects.filter(email=email).first()
-            
+
             if doctor and doctor.check_password(password):
                 request.session['doctor_id'] = str(doctor.id)
                 messages.success(request, 'Login successful!')
@@ -67,7 +68,7 @@ def login_doctor(request):
                 return redirect('login_doctor')
     else:
         form = DoctorLoginForm()
-    
+
     return render(request, 'DoctorApp/login.html', {'form': form})
 
 
@@ -114,7 +115,7 @@ def message_patient(request, patient_name):
             "document_url": document_url
         }
 
-        api_url = "http://192.168.8.101:8000/api/auth/receive_message/"  
+        api_url = "http://192.168.8.101:8000/api/auth/receive_message/"
 
         try:
             response = requests.post(api_url, json=payload, timeout=5)
@@ -157,14 +158,14 @@ def list_patients(request):
         patients = Patient.objects.all()
         data = list(patients.values())  # returns list of dicts
         return JsonResponse(data, safe=False)
-    
+
 
 #the views that should only be executed if doctor is logged in
 @login_required
 def doctor_dashboard(request):
     doctor_id = request.session.get('doctor_id')
     doctor = Doctor.objects.get(id=doctor_id)
-    patients = Patient.objects.all() 
+    patients = Patient.objects.all()
     return render(request, 'DoctorApp/dashboard.html', {'doctor': doctor,'patients': patients})
 
 def logout_doctor(request):
@@ -183,7 +184,7 @@ def settings_view(request):
     except Doctor.DoesNotExist:
         messages.error(request, "Doctor profile not found")
         return redirect('dashboard')
-    
+
     if request.method == 'POST':
         form = DoctorProfileForm(request.POST)
         if form.is_valid():
@@ -196,7 +197,7 @@ def settings_view(request):
             doctor.license_number = form.cleaned_data['license_number']
             doctor.years_of_experience = form.cleaned_data['years_of_experience']
             doctor.qualifications = form.cleaned_data['qualifications'].split('\n')
-            
+
             try:
                 doctor.save()
                 messages.success(request, 'Profile updated successfully!')
@@ -215,23 +216,23 @@ def settings_view(request):
             'qualifications': '\n'.join(doctor.qualifications) if doctor.qualifications else '',
         }
         form = DoctorProfileForm(initial=initial_data)
-    
+
     return render(request, 'DoctorApp/settings.html', {'form': form, 'doctor': doctor})
 
 
 # these are the routes ive set up
 
 # def dashboard(request):
-#     return render(request, 'DoctorApp/dashboard.html')  
+#     return render(request, 'DoctorApp/dashboard.html')
 
 # def login(request):
-#     return render(request, 'DoctorApp/login2.html')  
+#     return render(request, 'DoctorApp/login2.html')
 
 def patients(request):
-    return render(request, 'DoctorApp/patients.html')  
+    return render(request, 'DoctorApp/patients.html')
 
 def chat(request):
-    return render(request, 'DoctorApp/chat.html')  
+    return render(request, 'DoctorApp/chat.html')
 
 
 def cystela(request):
@@ -288,5 +289,5 @@ def predict_growth_rate(request):
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
 
-  
- 
+
+
