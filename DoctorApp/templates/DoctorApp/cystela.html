@@ -2,51 +2,54 @@
 {% load static %}
 
 <html>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
 <head>
-    <title>Simple Form</title>
+    <title>Ovarian Cyst Growth Predictor</title>
     <link rel="stylesheet" href="{% static 'css/cystella.css' %}">
 </head>
+
 <body>
-    
-    <form method="POST" class="form-container">
+
+    <form method="POST" class="form-container" onsubmit="event.preventDefault();">
         {% csrf_token %}
         <h2>Patient Details Info</h2>
-        <label >Patients Name:</label><br>
-        <input type="text" name="name"><br><br>
 
-        <label >Age of patient:</label><br>
-        <input type="number" name="age"><br><br>
+        <label>Patient's Name:</label><br>
+        <input type="text" name="name" id="name"><br><br>
 
-        <label >Cyst size in cm:</label><br>
-        <input type="number" name="cystsize"><br><br>
+        <label>Age of patient:</label><br>
+        <input type="number" name="age" id="age"><br><br>
 
-        <label >Menopause status:</label><br>
-        <select name="menopause_status">
-            <option value="" name="">--Select--</option>
-            <option value="" name="">Postmenopause</option>
-            <option value="" name="">Premenopause</option>
-            
-        </select>
-        <br><br>
-        <label >CA 125 levels:</label><br>
-        <input type="number" name="ca_levels"><br><br>
+        <label>Cyst size in cm:</label><br>
+        <input type="number" name="cystsize" id="cystsize"><br><br>
 
-        <label >Ultrasound features:</label><br>
-        <select name="Ultrasound_features">
-            <option value="" name="">--Select--</option>
-            <option value="" name="">Solid mass </option>
-            <option value="" name="">Simple Cyst </option>
-            <option value="" name="">Complex Cyst</option>
-            <option value="" name="">Septated Cyst</option>
-            <option value="" name="">Hemorrhagic Cyst</option>
-        </select>
-        <br><br>
-        
-       
-        <label >Description:</label><br>
-        <textarea name="description" rows="5" cols="40" placeholder="Write something..."></textarea><br><br>
+        <label>Menopause status:</label><br>
+        <select name="menopause_status" id="menopause_status">
+            <option value="">--Select--</option>
+            <option value="Postmenopause">Postmenopause</option>
+            <option value="Premenopause">Premenopause</option>
+        </select><br><br>
 
-        <label >Region:</label><br>
+        <label>CA 125 levels:</label><br>
+        <input type="number" name="ca_levels" id="ca_levels"><br><br>
+
+        <label>Ultrasound features:</label><br>
+        <select name="Ultrasound_features" id="ultrasound">
+            <option value="">--Select--</option>
+            <option value="Solid_mass">Solid mass</option>
+            <option value="Simple_Cyst">Simple Cyst</option>
+            <option value="Complex_Cyst">Complex Cyst</option>
+            <option value="Septated_Cyst">Septated Cyst</option>
+            <option value="Hemorrhagic_Cyst">Hemorrhagic Cyst</option>
+        </select><br><br>
+
+        <label>Reported Symptoms:</label><br>
+        <textarea name="description" id="description" rows="5" cols="40"
+            placeholder="Write something..."></textarea><br><br>
+
+        <label>Region:</label><br>
         <select name="region" id="region">
             <option value="">--Select Region--</option>
             <option value="Eldoret">Eldoret</option>
@@ -64,20 +67,78 @@
             <option value="Kakamega">Kakamega</option>
             <option value="Kericho">Kericho</option>
         </select><br><br>
-        <input type="submit" value="Submit">
+
         <div class="button-row">
-            <input type="submit" value="Predict">
-            <input type="submit" onclick="generateReport()" value="Generate Treatment Report">
+            <input type="button" value="Predict" onclick="predictGrowthRate()">
+            <input type="button" onclick="predictAndGenerateReport()" value="Generate Treatment Report">
             <input type="submit" value="Inventory">
-          </div>
-        
-        
+        </div>
     </form>
 
     {% if submitted %}
-        <p class=".form-container p">Thank you, {{ name }}! We received your submission.</p>
+    <p class=".form-container p">Thank you, {{ name }}! We received your submission.</p>
     {% endif %}
-    <script>
+<script>
+    async function predictGrowthRate() {
+        const payload = {
+            name: document.getElementById('name').value,
+            age: parseInt(document.getElementById('age').value),
+            size: parseFloat(document.getElementById('cystsize').value),
+            ca125: parseFloat(document.getElementById('ca_levels').value),
+            menopause: document.getElementById('menopause_status').value,
+            ultrasound: document.getElementById('ultrasound').value,
+            symptoms: document.getElementById('description').value,
+            region: document.getElementById('region').value,
+            management: "awaiting"
+        };
+
+        const response = await fetch("http://localhost:8000/predict/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            // ✅ Access jsPDF correctly
+            const { jsPDF } = window.jspdf || globalThis.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(14);
+            doc.text("Ovarian Cyst Growth Prediction Report", 20, 20);
+
+            doc.setFontSize(11);
+            let y = 35;
+            const lines = [
+                `Patient Name: ${payload.name}`,
+                `Age: ${payload.age}`,
+                `CA-125 Level: ${payload.ca125}`,
+                `Cyst Size (cm): ${payload.size}`,
+                `Menopause Status: ${payload.menopause}`,
+                `Ultrasound Findings: ${payload.ultrasound}`,
+                `Symptoms: ${payload.symptoms}`,
+                `Region: ${payload.region}`,
+                `----------------------------------------`,
+                `Prediction (cm/day): ${data.prediction}`,
+                `Growth Category: ${data.category}`,
+                `Recommended Management: ${data.recommended_management}`
+            ];
+
+            lines.forEach(line => {
+                doc.text(line, 20, y);
+                y += 10;
+            });
+
+            const filename = `cyst_prediction_${payload.name.replace(/\s/g, "_")}.pdf`;
+            doc.save(filename);
+        } else {
+            const errorText = await response.text();
+            alert("❌ Error: " + errorText);
+        }
+    }
+</script>
+<script>
     async function predictAndGenerateReport() {
         try {
             // 1. Collect form input
@@ -145,6 +206,6 @@
         }
     }
 </script>
-
 </body>
+
 </html>
