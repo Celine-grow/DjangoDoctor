@@ -2,6 +2,8 @@
 {% load static %}
 
 <html>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 
 <head>
     <title>Ovarian Cyst Growth Predictor</title>
@@ -77,7 +79,7 @@
     <p class=".form-container p">Thank you, {{ name }}! We received your submission.</p>
     {% endif %}
 
-  <script>
+ <script>
     async function predictGrowthRate() {
         const payload = {
             name: document.getElementById('name').value,
@@ -96,43 +98,48 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
-        
 
         if (response.ok) {
             const data = await response.json();
-            alert(
-                "✅ Prediction: " + data.prediction + "\n" +
-                "📊 Category: " + data.category + "\n" +
-                "🩺 Recommended Management: " + data.recommended_management
-            );
+
+            // ✅ Access jsPDF correctly
+            const { jsPDF } = window.jspdf || globalThis.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(14);
+            doc.text("Ovarian Cyst Growth Prediction Report", 20, 20);
+
+            doc.setFontSize(11);
+            let y = 35;
+            const lines = [
+                `Patient Name: ${payload.name}`,
+                `Age: ${payload.age}`,
+                `CA-125 Level: ${payload.ca125}`,
+                `Cyst Size (cm): ${payload.size}`,
+                `Menopause Status: ${payload.menopause}`,
+                `Ultrasound Findings: ${payload.ultrasound}`,
+                `Symptoms: ${payload.symptoms}`,
+                `Region: ${payload.region}`,
+                `----------------------------------------`,
+                `Prediction (cm/day): ${data.prediction}`,
+                `Growth Category: ${data.category}`,
+                `Recommended Management: ${data.recommended_management}`
+            ];
+
+            lines.forEach(line => {
+                doc.text(line, 20, y);
+                y += 10;
+            });
+
+            const filename = `cyst_prediction_${payload.name.replace(/\s/g, "_")}.pdf`;
+            doc.save(filename);
         } else {
             const errorText = await response.text();
             alert("❌ Error: " + errorText);
         }
     }
-
-    async function generateReport() {
-        const response = await fetch('http://localhost:8000/generate_report', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                region: document.getElementById('region').value,
-                management_option: "awaiting"
-            })
-        });
-
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'healthcare_report.pdf';
-            a.click();
-        } else {
-            alert(await response.text());
-        }
-    }
 </script>
+
 
 
 </body>
