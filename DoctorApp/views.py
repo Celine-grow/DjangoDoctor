@@ -240,7 +240,7 @@ def cystela(request):
 
 from pycaret.regression import load_model, predict_model
 
-# ✅ Load the model once when views.py is loaded
+# Load the model once when views.py is loaded
 growth_model = load_model('DoctorApp/growth_rate_model')  # adjust path if needed
 
 @csrf_exempt
@@ -249,7 +249,7 @@ def predict_growth_rate(request):
         try:
             data = json.loads(request.body)
 
-            # ✅ Build DataFrame for prediction
+            # Build DataFrame for prediction
             df = pd.DataFrame([{
                 'age': data['age'],
                 'size': data['size'],
@@ -261,7 +261,7 @@ def predict_growth_rate(request):
                 'region': data['region']
             }])
 
-            # ✅ Predict with PyCaret model
+            # ✅ Predict with PyCaret model 
             result = predict_model(growth_model, data=df)
             prediction = float(result['prediction_label'].iloc[0])
 
@@ -278,9 +278,21 @@ def predict_growth_rate(request):
 
             category = classify(prediction)
 
+            # ✅ Recommend management based on category
+            def recommend(category):
+                return {
+                    'Shrinking': 'Monitor or consider medication',
+                    'Stable': 'Observation or schedule routine follow-up',
+                    'Moderate-growing': 'Refer to gynecologist for further assessment',
+                    'Fast-growing': 'Urgent surgical evaluation recommended'
+                }.get(category, 'Consult specialist')
+
+            recommended = recommend(category)
+
             return JsonResponse({
                 'prediction': round(prediction, 4),
-                'category': category
+                'category': category, 
+                'recommended_management': recommended
             })
 
         except Exception as e:

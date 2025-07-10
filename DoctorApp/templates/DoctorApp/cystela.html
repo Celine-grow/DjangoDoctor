@@ -77,57 +77,63 @@
     <p class=".form-container p">Thank you, {{ name }}! We received your submission.</p>
     {% endif %}
 
-    <script>
-        async function predictGrowthRate() {
-            const payload = {
-                name: document.getElementById('name').value,
-                age: parseInt(document.getElementById('age').value),
-                size: parseFloat(document.getElementById('cystsize').value),
-                ca125: parseFloat(document.getElementById('ca_levels').value),
-                menopause: document.getElementById('menopause_status').value,
-                ultrasound: document.getElementById('ultrasound').value,
-                symptoms: document.getElementById('description').value,
+  <script>
+    async function predictGrowthRate() {
+        const payload = {
+            name: document.getElementById('name').value,
+            age: parseInt(document.getElementById('age').value),
+            size: parseFloat(document.getElementById('cystsize').value),
+            ca125: parseFloat(document.getElementById('ca_levels').value),
+            menopause: document.getElementById('menopause_status').value,
+            ultrasound: document.getElementById('ultrasound').value,
+            symptoms: document.getElementById('description').value,
+            region: document.getElementById('region').value,
+            management: "awaiting"
+        };
+
+        const response = await fetch("http://localhost:8000/predict/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        
+
+        if (response.ok) {
+            const data = await response.json();
+            alert(
+                "✅ Prediction: " + data.prediction + "\n" +
+                "📊 Category: " + data.category + "\n" +
+                "🩺 Recommended Management: " + data.recommended_management
+            );
+        } else {
+            const errorText = await response.text();
+            alert("❌ Error: " + errorText);
+        }
+    }
+
+    async function generateReport() {
+        const response = await fetch('http://localhost:8000/generate_report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
                 region: document.getElementById('region').value,
-                management: "awaiting"
-            };
+                management_option: "awaiting"
+            })
+        });
 
-            const response = await fetch("http://localhost:8000/predict/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                alert("✅ Prediction: " + data.prediction + "\n📊 Category: " + data.category);
-            } else {
-                const errorText = await response.text();
-                alert("❌ Error: " + errorText);
-            }
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'healthcare_report.pdf';
+            a.click();
+        } else {
+            alert(await response.text());
         }
+    }
+</script>
 
-        async function generateReport() {
-            const response = await fetch('http://localhost:8000/generate_report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    region: document.getElementById('region').value,
-                    management_option: "awaiting"
-                })
-            });
-
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'healthcare_report.pdf';
-                a.click();
-            } else {
-                alert(await response.text());
-            }
-        }
-    </script>
 
 </body>
 
