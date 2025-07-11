@@ -1,85 +1,81 @@
-<!DOCTYPE html>
+{% extends 'DoctorApp/base.html' %}
 {% load static %}
 
-<html>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+{% block title %}Ovarian Cyst Growth Predictor{% endblock %}
 
+{% block content %}
+<form method="POST" class="form-container" onsubmit="event.preventDefault();">
+    {% csrf_token %}
+    <h2>Patient Details Info</h2>
 
-<head>
-    <title>Ovarian Cyst Growth Predictor</title>
-    <link rel="stylesheet" href="{% static 'css/cystella.css' %}">
-</head>
+    <label>Patient's Name:</label><br>
+    <input type="text" name="name" id="name"><br><br>
 
-<body>
+    <label>Age of patient:</label><br>
+    <input type="number" name="age" id="age"><br><br>
 
-    <form method="POST" class="form-container" onsubmit="event.preventDefault();">
-        {% csrf_token %}
-        <h2>Patient Details Info</h2>
+    <label>Cyst size in cm:</label><br>
+    <input type="number" name="cystsize" id="cystsize"><br><br>
 
-        <label>Patient's Name:</label><br>
-        <input type="text" name="name" id="name"><br><br>
+    <label>Menopause status:</label><br>
+    <select name="menopause_status" id="menopause_status">
+        <option value="">--Select--</option>
+        <option value="Postmenopause">Postmenopause</option>
+        <option value="Premenopause">Premenopause</option>
+    </select><br><br>
 
-        <label>Age of patient:</label><br>
-        <input type="number" name="age" id="age"><br><br>
+    <label>CA 125 levels:</label><br>
+    <input type="number" name="ca_levels" id="ca_levels"><br><br>
 
-        <label>Cyst size in cm:</label><br>
-        <input type="number" name="cystsize" id="cystsize"><br><br>
+    <label>Ultrasound features:</label><br>
+    <select name="Ultrasound_features" id="ultrasound">
+        <option value="">--Select--</option>
+        <option value="Solid_mass">Solid mass</option>
+        <option value="Simple_Cyst">Simple Cyst</option>
+        <option value="Complex_Cyst">Complex Cyst</option>
+        <option value="Septated_Cyst">Septated Cyst</option>
+        <option value="Hemorrhagic_Cyst">Hemorrhagic Cyst</option>
+    </select><br><br>
 
-        <label>Menopause status:</label><br>
-        <select name="menopause_status" id="menopause_status">
-            <option value="">--Select--</option>
-            <option value="Postmenopause">Postmenopause</option>
-            <option value="Premenopause">Premenopause</option>
-        </select><br><br>
+    <label>Reported Symptoms:</label><br>
+    <textarea name="description" id="description" rows="5" cols="40"
+        placeholder="Write something..."></textarea><br><br>
 
-        <label>CA 125 levels:</label><br>
-        <input type="number" name="ca_levels" id="ca_levels"><br><br>
+    <label>Region:</label><br>
+    <select name="region" id="region">
+        <option value="">--Select Region--</option>
+        <option value="Eldoret">Eldoret</option>
+        <option value="Loitoktok">Loitoktok</option>
+        <option value="Mombasa">Mombasa</option>
+        <option value="Nairobi">Nairobi</option>
+        <option value="Kisumu">Kisumu</option>
+        <option value="Machakos">Machakos</option>
+        <option value="Embu">Embu</option>
+        <option value="Nakuru">Nakuru</option>
+        <option value="Moi">Moi</option>
+        <option value="Pumwani">Pumwani</option>
+        <option value="Garrisa">Garrisa</option>
+        <option value="Kitale">Kitale</option>
+        <option value="Kakamega">Kakamega</option>
+        <option value="Kericho">Kericho</option>
+    </select><br><br>
 
-        <label>Ultrasound features:</label><br>
-        <select name="Ultrasound_features" id="ultrasound">
-            <option value="">--Select--</option>
-            <option value="Solid_mass">Solid mass</option>
-            <option value="Simple_Cyst">Simple Cyst</option>
-            <option value="Complex_Cyst">Complex Cyst</option>
-            <option value="Septated_Cyst">Septated Cyst</option>
-            <option value="Hemorrhagic_Cyst">Hemorrhagic Cyst</option>
-        </select><br><br>
+    <div class="button-row">
+        <input type="button" value="Predict" onclick="predictGrowthRate()">
+        <input type="button" onclick="generateReport()" value="Generate Treatment Report">
+        <input type="submit" value="Inventory">
+    </div>
+</form>
 
-        <label>Reported Symptoms:</label><br>
-        <textarea name="description" id="description" rows="5" cols="40"
-            placeholder="Write something..."></textarea><br><br>
+{% if submitted %}
+<p class="form-container p">Thank you, {{ name }}! We received your submission.</p>
+{% endif %}
+{% endblock %}
 
-        <label>Region:</label><br>
-        <select name="region" id="region">
-            <option value="">--Select Region--</option>
-            <option value="Eldoret">Eldoret</option>
-            <option value="Loitoktok">Loitoktok</option>
-            <option value="Mombasa">Mombasa</option>
-            <option value="Nairobi">Nairobi</option>
-            <option value="Kisumu">Kisumu</option>
-            <option value="Machakos">Machakos</option>
-            <option value="Embu">Embu</option>
-            <option value="Nakuru">Nakuru</option>
-            <option value="Moi">Moi</option>
-            <option value="Pumwani">Pumwani</option>
-            <option value="Garrisa">Garrisa</option>
-            <option value="Kitale">Kitale</option>
-            <option value="Kakamega">Kakamega</option>
-            <option value="Kericho">Kericho</option>
-        </select><br><br>
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-        <div class="button-row">
-            <input type="button" value="Predict" onclick="predictGrowthRate()">
-            <input type="button" onclick="generateReport()" value="Generate Treatment Report">
-            <input type="submit" value="Inventory">
-        </div>
-    </form>
-
-    {% if submitted %}
-    <p class=".form-container p">Thank you, {{ name }}! We received your submission.</p>
-    {% endif %}
-
- <script>
+<script>
     async function predictGrowthRate() {
         const payload = {
             name: document.getElementById('name').value,
@@ -101,8 +97,6 @@
 
         if (response.ok) {
             const data = await response.json();
-
-            // ✅ Access jsPDF correctly
             const { jsPDF } = window.jspdf || globalThis.jspdf;
             const doc = new jsPDF();
 
@@ -139,9 +133,4 @@
         }
     }
 </script>
-
-
-
-</body>
-
-</html>
+{% endblock %}

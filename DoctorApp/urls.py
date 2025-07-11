@@ -6,9 +6,9 @@ urlpatterns = [
     path('', views.register_doctor, name='register_doctor'),
     path('login/', views.login_doctor, name='login_doctor'),
     path('dashboard/', views.doctor_dashboard, name='dashboard'),
-    path('patients/', views.patients, name='patients'),  
+    path('patients/', views.patients, name='patients'),  # working 
     path('message/<str:patient_name>/', message_patient, name='message_patient'),
-    path('cystela/', views.cystela, name='cystela'),  
+    path('cystela/', views.cystela, name='cystela'), #working  
     path('predict/', views.predict_growth_rate, name='predict'),  
 
     path('settings/', views.settings_view, name='settings'), 
