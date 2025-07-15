@@ -3,29 +3,30 @@
 - Find the instructions for installing pyenv [here](https://github.com/pyenv/pyenv)
 
 ## Setup process
-1. Create virutal environment
+1. Create virtual environment
 ``` bash
-python3 -m venv venv
+python3 -m venv venv311
 or
-py -m venv venv
+py -m venv venv311
 or
-python -m venv venv
+python -m venv venv311
 ```
 
 2. Activate the virtual environment
 - Windows
 ``` bash
-venv\Scripts\activate
+.\venv311\Scripts\activate
 ```
 - Mac/Linux
 ``` bash
-source venv/bin/activate
+source venv311/bin/activate
 ```
-
-3. Install dependancies
+3.Then start by installing this,"pip install numpy==1.24.4 scipy==1.11.4 pandas==2.1.4 scikit-learn==1.4.2",To avoid errors of pre compiling builder versions then:
+Install dependancies
 ``` bash
 pip3 install -r requirements.txt
 ```
+
 
 4. Perform migrations
 ``` bash
