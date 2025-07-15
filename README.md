@@ -6,6 +6,10 @@
 1. Create virutal environment
 ``` bash
 python3 -m venv venv
+or
+py -m venv venv
+or
+python -m venv venv
 ```
 
 2. Activate the virtual environment
