@@ -1,7 +1,84 @@
 {% extends 'DoctorApp/base.html' %}
 {% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cystella{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/cystella.css' %}">
+</head>
+{% block extra_css %}
+<style>
+    .form-container {
+        background-color: #fff;
+        padding: 30px;
+        margin: auto;
+        max-width: 600px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
 
-{% block title %}Ovarian Cyst Growth Predictor{% endblock %}
+    .form-container h2 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        background-color: #fafafa;
+    }
+
+    textarea {
+        resize: vertical;
+    }
+
+    .button-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .button-row input[type="button"],
+    .button-row input[type="submit"] {
+        flex: 1;
+        padding: 10px;
+        font-size: 16px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .button-row input[type="button"]:hover,
+    .button-row input[type="submit"]:hover {
+        background-color: #2980b9;
+    }
+
+    .form-container p {
+        text-align: center;
+        margin-top: 20px;
+        color: green;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <form method="POST" class="form-container" onsubmit="event.preventDefault();">
@@ -88,6 +165,7 @@
             region: document.getElementById('region').value,
             management: "awaiting"
         };
+        console.log('📤 Sending payload:', payload);
 
         const response = await fetch("http://localhost:8000/predict/", {
             method: "POST",
@@ -95,35 +173,51 @@
             body: JSON.stringify(payload)
         });
 
-        if (response.ok) {
+             if (response.ok) {
             const data = await response.json();
             const { jsPDF } = window.jspdf || globalThis.jspdf;
             const doc = new jsPDF();
 
-            doc.setFontSize(14);
-            doc.text("Ovarian Cyst Growth Prediction Report", 20, 20);
+            // ✅ Pink strip at the top
+            doc.setFillColor(255, 192, 203); // light pink
+            doc.rect(0, 0, 210, 20, 'F'); // full width pink strip
 
+            // ✅ Title on top of pink strip
+            doc.setTextColor(40, 40, 40);
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.text("Ovarian Cyst Growth Prediction Report", 20, 15);
+
+            doc.setTextColor(0, 0, 0); // Reset to black
             doc.setFontSize(11);
-            let y = 35;
+            doc.setFont("helvetica", "normal");
+
+            let y = 30;
+
             const lines = [
-                `Patient Name: ${payload.name}`,
-                `Age: ${payload.age}`,
-                `CA-125 Level: ${payload.ca125}`,
-                `Cyst Size (cm): ${payload.size}`,
-                `Menopause Status: ${payload.menopause}`,
-                `Ultrasound Findings: ${payload.ultrasound}`,
-                `Symptoms: ${payload.symptoms}`,
-                `Region: ${payload.region}`,
+                `This report is generated for patient: ${payload.name}.`,
+                `The patient is ${payload.age} years old with a cyst size of ${payload.size} cm.`,
+                `CA-125 level measured: ${payload.ca125}.`,
+                `Menopause status is: ${payload.menopause}, and ultrasound results indicate: ${payload.ultrasound}.`,
+                `Reported symptoms: ${payload.symptoms}.`,
+                `Region of examination: ${payload.region}.`,
                 `----------------------------------------`,
-                `Prediction (cm/day): ${data.prediction}`,
-                `Growth Category: ${data.category}`,
-                `Recommended Management: ${data.recommended_management}`
+                `Predicted cyst growth rate: ${data.prediction} cm/day.`,
+                `Based on this rate, the system classifies the growth as: ${data.category}.`,
+                `Recommended medical action: ${data.recommended_management}.`,
+                `----------------------------------------`,
+                `Please consult a healthcare professional for further evaluation.`
             ];
 
             lines.forEach(line => {
                 doc.text(line, 20, y);
                 y += 10;
             });
+
+                    const filename = `cyst_prediction_${payload.name.replace(/\s/g, "_")}.pdf`;
+                    doc.save(filename);
+                }
+
 
             const filename = `cyst_prediction_${payload.name.replace(/\s/g, "_")}.pdf`;
             doc.save(filename);
