@@ -70,7 +70,7 @@
 
         <div class="button-row">
             <input type="button" value="Predict" onclick="predictGrowthRate()">
-            <input type="button" onclick="generateReport()" value="Generate Treatment Report">
+            <input type="button" onclick="predictAndGenerateReport()" value="Generate Treatment Report">
             <input type="submit" value="Inventory">
         </div>
     </form>
@@ -78,8 +78,7 @@
     {% if submitted %}
     <p class=".form-container p">Thank you, {{ name }}! We received your submission.</p>
     {% endif %}
-
- <script>
+<script>
     async function predictGrowthRate() {
         const payload = {
             name: document.getElementById('name').value,
@@ -139,9 +138,74 @@
         }
     }
 </script>
+<script>
+    async function predictAndGenerateReport() {
+        try {
+            // 1. Collect form input
+            const name = document.getElementById('name').value;
+            const age = parseInt(document.getElementById('age').value);
+            const size = parseFloat(document.getElementById('cystsize').value);
+            const ca125 = parseFloat(document.getElementById('ca_levels').value);
+            const menopause = document.getElementById('menopause_status').value;
+            const ultrasound = document.getElementById('ultrasound').value;
+            const symptoms = document.getElementById('description').value;
+            const region = document.getElementById('region').value;
 
+            // 2. Call prediction system from your teammate (as if it's an API)
+            const predictionResponse = await fetch("http://localhost:8000/predict/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name,
+                    age,
+                    size,
+                    ca125,
+                    menopause,
+                    ultrasound,
+                    symptoms,
+                    region,
+                    management: "awaiting"
+                })
+            });
 
+            if (!predictionResponse.ok) {
+                const error = await predictionResponse.text();
+                alert("Prediction failed: " + error);
+                return;
+            }
 
+            const predictionData = await predictionResponse.json();
+            const recommendationText = predictionData.recommended_management;
+
+            // 3. Now send that recommendation to YOUR report generator
+            const reportResponse = await fetch("http://localhost:8001/generate_report", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    region: region,
+                    recommendation: recommendationText
+                })
+            });
+
+            if (!reportResponse.ok) {
+                const error = await reportResponse.json();
+                alert("Report failed: " + error.detail);
+                return;
+            }
+
+            // 4. Download PDF
+            const blob = await reportResponse.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `healthcare_report_${name.replace(/\s/g, "_")}.pdf`;
+            a.click();
+
+        } catch (error) {
+            alert("Something went wrong: " + error);
+        }
+    }
+</script>
 </body>
 
 </html>
