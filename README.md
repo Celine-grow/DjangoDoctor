@@ -1,99 +1,109 @@
-# DjangoDoctor
-- This application has strict version requirements due to `pycaret`. It is recommended that you use Python version 3.11.0 which can be installed using `pyenv`.
-- Find the instructions for installing pyenv [here](https://github.com/pyenv/pyenv)
+DjangoDoctor
+This is a Django-based backend system for doctors that supports one-way messaging to patients and integrates with an external cost prediction model for treatment estimation.
 
-## Setup process
-1. Create virtual environment
-``` bash
+⚠️ Note: This application has strict version requirements due to dependencies like pycaret. It is highly recommended to use Python 3.11.0, which can be installed using pyenv.
+👉 Install pyenv instructions
+
+🚀 Setup Instructions
+1. Create a Virtual Environment
+bash
+Copy
+Edit
+# For Linux/Mac
 python3 -m venv venv311
-or
+
+# For Windows
 py -m venv venv311
-or
-python -m venv venv311
-```
-
-2. Activate the virtual environment
-- Windows
-``` bash
+2. Activate the Environment
+bash
+Copy
+Edit
+# Windows
 .\venv311\Scripts\activate
-```
-- Mac/Linux
-``` bash
+
+# Mac/Linux
 source venv311/bin/activate
-```
-3.Then start by installing this,"pip install numpy==1.24.4 scipy==1.11.4 pandas==2.1.4 scikit-learn==1.4.2",To avoid errors of pre compiling builder versions then:
-Install dependancies
-``` bash
-pip3 install -r requirements.txt
-```
+3. Install Core Dependencies
+Install core versions first to avoid build issues:
 
+bash
+Copy
+Edit
+pip install numpy==1.24.4 scipy==1.11.4 pandas==2.1.4 scikit-learn==1.4.2
+Then install the full requirements:
 
-4. Perform migrations
-``` bash
-python3 manage.py migrate
-```
+bash
+Copy
+Edit
+pip install -r requirements.txt
+4. Run Migrations
+bash
+Copy
+Edit
+python manage.py migrate
+💬 Doctor-to-Patient Messaging System
+This feature enables doctors to send messages to patients (one-way communication).
 
+✅ How It Works
+When a patient registers on the Cystella system (Patient System), they are automatically registered on the Doctor System (patients.html).
 
-Extra Information
+Doctors can select a patient and click "Message Patient" to open a messaging interface.
 
-1.Doctor-to-Patient Messaging System
-This feature allows doctors to send messages to individual patients. The implementation is one-way only:
-🔒 Patients cannot message each other, or message doctors — only receive messages.
-
-✅ How it Works
-Doctors select a patient from the dashboard and click “Chat”.
-
-They are directed to the messaging interface where they can write and send messages.
-
-The message is sent to the backend, then forwarded to the Patient System's API endpoint for that user.
+The message is sent to this backend, which forwards it to the Cystella Patient API.
 
 📡 Requirements
-Patient System Server Must Be Running
+Patient System Server (Cystella) must be running to receive and display messages.
 
-The Patient System  must be actively running. i.e cystella 
+If the Cystella server is down, the message will not be delivered (will silently fail or return a server error).
 
-Otherwise, the message cannot be delivered to the patient and will fail silently or return a server error.
+⚙️ API Endpoint Configuration
+In the Doctor system’s views.py specifically message_patient view, ensure the api_url uses your local IP address (not 127.0.0.1), for example:
 
-Correct API Endpoint Configuration
-
-In the Doctor System’s views.py, make sure the messaging API i.e message_patient  api_url endpoint uses your local IP address (not 127.0.0.1):
+python
+Copy
+Edit
 api_url = 'http://<your-local-ip>:8000/api/auth/receive_message/'
-For example:
+To run the server:
 
-Start the Doctor Backend Server:
-
+bash
+Copy
+Edit
 python manage.py runserver 0.0.0.0:8000
-Send a message as a doctor and confirm:
+📊 Model Integration – Cost Prediction
+The system integrates with a separate FastAPI-based Cost Prediction Service that provides treatment cost estimations based on selected region and treatment options.
 
-Message appears in the patient message list.
+🔗 Setup Requirements
+Clone and set up the Cost Prediction repository (as guided in its own README).
 
-No errors appear in either server console.
+Install dependencies, load or train the model, and run the FastAPI service.
 
-2.Model Intergration
+You should see output like:
 
-💡 Cost Prediction Integration
-This system integrates with a separate Cost Prediction Model service to generate treatment cost estimates based on selected region and treatment options.
+pgsql
+Copy
+Edit
+INFO:     Started server process [15372]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+⚠️ Important
+The prediction service must be running for this Django app to successfully request and display cost estimations.
 
-🔗 Prerequisite Setup
-To enable the cost prediction functionality in this app, you must first:
+If the model is offline, cost estimation features will not work.
 
-Clone and set up the Cost Prediction Model service
-Follow the setup instructions in the Cost Prediction Repository  — it includes steps to:
+✅ Final Checklist
+ Python 3.11.0 installed via pyenv
 
-Install dependencies
+ Virtual environment set up and activated
 
-Load or train the machine learning model
+ Base dependencies installed (numpy, pandas, etc.)
 
-Run the FastAPI service
+ requirements.txt installed
 
-Start the prediction model API server
-Once you have followed all the guidelines there ,your server will be up and running something like,
-INFO: Started server process [15372]
-INFO: Waiting for application startup.
-INFO: Application startup complete.
-INFO: Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO: 127.0.0.1:50132 - "POST /generate_report HTTP/1.1" 422 Unprocessable Entity
-INFO: 127.0.0.1:50143 - "POST /generate_report HTTP/1.1" 200 OK”
+ Migrations done
 
+ Patient System running
 
-⚠️ Important: The prediction service must be running for the doctor system to successfully make cost estimation requests.
+ Cost Prediction API running
+
+ Local IP configured correctly in views.py
