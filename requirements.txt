@@ -49,10 +49,8 @@ mongoengine==0.29.1
 nbformat==5.10.4
 nest-asyncio==1.6.0
 numba==0.61.2
-numpy==1.26.4
 orjson==3.10.18
 packaging==25.0
-pandas==2.1.4
 parso==0.8.4
 patsy==1.0.1
 pexpect==4.9.0
@@ -78,9 +76,7 @@ retrying==1.4.0
 rpds-py==0.26.0
 schemdraw==0.15
 scikit-base==0.7.8
-scikit-learn==1.4.2
 scikit-plot==0.3.7
-scipy==1.11.4
 simplejson==3.20.1
 six==1.17.0
 sklearn-compat==0.1.3
