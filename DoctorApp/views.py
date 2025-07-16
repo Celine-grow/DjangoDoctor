@@ -161,13 +161,13 @@ def list_patients(request):
         return JsonResponse(data, safe=False)
 
 
-#the views that should only be executed if doctor is logged in
+# #the views that should only be executed if doctor is logged in
 @login_required
 def doctor_dashboard(request):
-    doctor_id = request.session.get('doctor_id')
-    doctor = Doctor.objects.get(id=doctor_id)
-    patients = Patient.objects.all()
-    return render(request, 'DoctorApp/dashboard.html', {'doctor': doctor,'patients': patients})
+    # doctor_id = request.session.get('doctor_id')
+    # doctor = Doctor.objects.get(id=doctor_id)
+    # patients = Patient.objects.all()
+     return render(request, 'DoctorApp/dashboard.html') #{'doctor': doctor,'patients': patients})
 
 def logout_doctor(request):
     if 'doctor_id' in request.session:
@@ -175,59 +175,60 @@ def logout_doctor(request):
     messages.success(request, 'You have been logged out')
     return redirect('login_doctor')
 # @login_required
-def settings_view(request):
-    doctor_id = request.session.get('doctor_id')
-    if not doctor_id:
-        messages.error(request, "You must be logged in as a doctor to access settings.")
-        return redirect('login_doctor')
-    try:
-        doctor = Doctor.objects.get(id=doctor_id)
-    except Doctor.DoesNotExist:
-        messages.error(request, "Doctor profile not found")
-        return redirect('dashboard')
+# def settings_view(request):
+    #  doctor_id = request.session.get('doctor_id')
+    #  if not doctor_id:
+    #      messages.error(request, "You must be logged in as a doctor to access settings.")
+    #      return redirect('login_doctor')
+    #  try:
+    #      doctor = Doctor.objects.get(id=doctor_id)
+    #  except Doctor.DoesNotExist:
+    #      messages.error(request, "Doctor profile not found")
+    #      return redirect('dashboard')
 
-    if request.method == 'POST':
-        form = DoctorProfileForm(request.POST)
-        if form.is_valid():
-            # Update doctor fields manually
-            doctor.first_name = form.cleaned_data['first_name']
-            doctor.last_name = form.cleaned_data['last_name']
-            doctor.email = form.cleaned_data['email']
-            doctor.contact = form.cleaned_data['contact']
-            doctor.specialization = form.cleaned_data['specialization']
-            doctor.license_number = form.cleaned_data['license_number']
-            doctor.years_of_experience = form.cleaned_data['years_of_experience']
-            doctor.qualifications = form.cleaned_data['qualifications'].split('\n')
+    #  if request.method == 'POST':
+    #      form = DoctorProfileForm(request.POST)
+    #      if form.is_valid():
+    #          # Update doctor fields manually
+    #          doctor.first_name = form.cleaned_data['first_name']
+    #          doctor.last_name = form.cleaned_data['last_name']
+    #          doctor.email = form.cleaned_data['email']
+    #          doctor.contact = form.cleaned_data['contact']
+    #          doctor.specialization = form.cleaned_data['specialization']
+    #          doctor.license_number = form.cleaned_data['license_number']
+    #          doctor.years_of_experience = form.cleaned_data['years_of_experience']
+    #          doctor.qualifications = form.cleaned_data['qualifications'].split('\n')
 
-            try:
-                doctor.save()
-                messages.success(request, 'Profile updated successfully!')
-                return redirect('settings')
-            except Exception as e:
-                messages.error(request, f'Error saving profile: {str(e)}')
-    else:
-        initial_data = {
-            'first_name': doctor.first_name,
-            'last_name': doctor.last_name,
-            'email': doctor.email,
-            'contact': doctor.contact,
-            'specialization': doctor.specialization,
-            'license_number': doctor.license_number,
-            'years_of_experience': doctor.years_of_experience,
-            'qualifications': '\n'.join(doctor.qualifications) if doctor.qualifications else '',
-        }
-        form = DoctorProfileForm(initial=initial_data)
-
-    return render(request, 'DoctorApp/settings.html', {'form': form, 'doctor': doctor})
+    #          try:
+    #              doctor.save()
+    #              messages.success(request, 'Profile updated successfully!')
+    #              return redirect('settings')
+    #          except Exception as e:
+    #              messages.error(request, f'Error saving profile: {str(e)}')
+    #      else:
+    #          initial_data = {
+    #              'first_name': doctor.first_name,
+    #              'last_name': doctor.last_name,
+    #              'email': doctor.email,
+    #              'contact': doctor.contact,
+    #              'specialization': doctor.specialization,
+    #              'license_number': doctor.license_number,
+    #              'years_of_experience': doctor.years_of_experience,
+    #              'qualifications': '\n'.join(doctor.qualifications) if doctor.qualifications else '',
+    #          }
+    #          form = DoctorProfileForm(initial=initial_data)
+    
+            #  return render(request, 'DoctorApp/settings.html') #{'form': form, 'doctor': doctor})
 
 
 # these are the routes ive set up
 
-# def dashboard(request):
+# def doctor_dashboard(request):
+
 #     return render(request, 'DoctorApp/dashboard.html')
 
-# def login(request):
-#     return render(request, 'DoctorApp/login2.html')
+def settings_view(request):
+    return render(request, 'DoctorApp/settings.html')
 
 def patients(request):
     return render(request, 'DoctorApp/patients.html')
