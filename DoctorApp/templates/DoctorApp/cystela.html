@@ -138,7 +138,7 @@
     <div class="button-row">
         <input type="button" value="Predict" onclick="predictGrowthRate()">
         <input type="button" onclick="predictAndGenerateReport()" value="Generate Treatment Report">
-        <input type="submit" value="Inventory">
+        <input type="submit" value="Inventory" onclick="fetchInventoryByRegion()">
     </div>
 </form>
 
@@ -164,7 +164,7 @@ async function predictGrowthRate() {
         management: "awaiting"
     };
 
-    const response = await fetch("{%  http://localhost:8000/cystela/  %}", {
+    const response = await fetch("http://localhost:8000/predict/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -188,15 +188,16 @@ async function predictGrowthRate() {
 
         let y = 30;
         const lines = [
-            `Patient: ${payload.name}, Age: ${payload.age}, Cyst Size: ${payload.size} cm`,
-            `CA-125: ${payload.ca125}, Menopause: ${payload.menopause}, Ultrasound: ${payload.ultrasound}`,
-            `Symptoms: ${payload.symptoms}, Region: ${payload.region}`,
+            `Patient: ${payload.name}, Age: ${payload.age}, has a cyst size of: ${payload.size} cm.`,
+            `Her CA-125 levels are: ${payload.ca125},and she is in this stage of Menopause: ${payload.menopause}`,
+            `Her ultrasound results are as follows: ${payload.ultrasound}`,
+            `She is from Region: ${payload.region}`,
+            
+            `Her Predicted cyst Growth per day is: ${data.prediction} cm/day`,
+            `Its classification is labled: ${data.category}`,
+            `These are the recommended actions to be taken: ${data.recommended_management}`,
             `----------------------------------------`,
-            `Predicted Growth: ${data.prediction} cm/day`,
-            `Classification: ${data.category}`,
-            `Recommended Action: ${data.recommended_management}`,
-            `----------------------------------------`,
-            `Consult a medical expert for further advice.`
+            `Be sure to consult a medical expert for further advice and more testig.`
         ];
 
         lines.forEach(line => {
@@ -266,4 +267,63 @@ async function predictAndGenerateReport() {
     a.click();
 }
 </script>
+<!-- inventory script  -->
+ <script>
+async function fetchInventoryByRegion() {
+    const region = document.getElementById('region').value;
+    if (!region) {
+        alert("Please select a region.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/inventory/?region=${region}`);
+        if (!response.ok) {
+            const error = await response.json();
+            alert("Error: " + error.error);
+            return;
+        }
+
+        const data = await response.json();
+        const meds = data.medications;
+
+        if (!meds.length) {
+            alert("No medications found for this region.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf || globalThis.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFillColor(255, 192, 203);  // Light pink
+        doc.rect(0, 0, 210, 20, 'F');
+        doc.setTextColor(30, 30, 30);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(15);
+        doc.text(`Medication Inventory - ${region}`, 15, 15);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        let y = 30;
+
+        meds.forEach((med, i) => {
+            const line = `${i + 1}. ${med.Medication} - ${med.Dosage}, Ksh ${med.Cost}, Stock: ${med.Stock}`;
+            doc.text(line, 15, y);
+            y += 10;
+
+            if (y > 270) { // create new page if needed
+                doc.addPage();
+                y = 20;
+            }
+        });
+
+        const filename = `inventory_${region.replace(/\s/g, "_")}.pdf`;
+        doc.save(filename);
+    } catch (err) {
+        alert("Failed to generate PDF: " + err.message);
+    }
+}
+</script>
+
+
 {% endblock %}

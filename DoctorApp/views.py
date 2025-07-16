@@ -16,6 +16,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import Patient
 from pycaret.regression import load_model, predict_model
+# Load Excel once when server starts
+med_df = pd.read_csv('DoctorApp\static\data\Resources Inventory Cost Sheet.csv')
 
 def register_doctor(request):
     if request.method == 'POST':
@@ -164,9 +166,9 @@ def list_patients(request):
 # #the views that should only be executed if doctor is logged in
 @login_required
 def doctor_dashboard(request):
-    # doctor_id = request.session.get('doctor_id')
-    # doctor = Doctor.objects.get(id=doctor_id)
-    # patients = Patient.objects.all()
+     doctor_id = request.session.get('doctor_id')
+     doctor = Doctor.objects.get(id=doctor_id)
+     patients = Patient.objects.all()
      return render(request, 'DoctorApp/dashboard.html') #{'doctor': doctor,'patients': patients})
 
 def logout_doctor(request):
@@ -174,57 +176,56 @@ def logout_doctor(request):
         del request.session['doctor_id']
     messages.success(request, 'You have been logged out')
     return redirect('login_doctor')
-# @login_required
-# def settings_view(request):
-    #  doctor_id = request.session.get('doctor_id')
-    #  if not doctor_id:
-    #      messages.error(request, "You must be logged in as a doctor to access settings.")
-    #      return redirect('login_doctor')
-    #  try:
-    #      doctor = Doctor.objects.get(id=doctor_id)
-    #  except Doctor.DoesNotExist:
-    #      messages.error(request, "Doctor profile not found")
-    #      return redirect('dashboard')
+@login_required
+def settings_view(request):
+      doctor_id = request.session.get('doctor_id')
+      if not doctor_id:
+          messages.error(request, "You must be logged in as a doctor to access settings.")
+          return redirect('login_doctor')
+      try:
+          doctor = Doctor.objects.get(id=doctor_id)
+      except Doctor.DoesNotExist:
+          messages.error(request, "Doctor profile not found")
+          return redirect('dashboard')
 
-    #  if request.method == 'POST':
-    #      form = DoctorProfileForm(request.POST)
-    #      if form.is_valid():
-    #          # Update doctor fields manually
-    #          doctor.first_name = form.cleaned_data['first_name']
-    #          doctor.last_name = form.cleaned_data['last_name']
-    #          doctor.email = form.cleaned_data['email']
-    #          doctor.contact = form.cleaned_data['contact']
-    #          doctor.specialization = form.cleaned_data['specialization']
-    #          doctor.license_number = form.cleaned_data['license_number']
-    #          doctor.years_of_experience = form.cleaned_data['years_of_experience']
-    #          doctor.qualifications = form.cleaned_data['qualifications'].split('\n')
+      if request.method == 'POST':
+          form = DoctorProfileForm(request.POST)
+          if form.is_valid():
+              #Update doctor fields manually
+              doctor.first_name = form.cleaned_data['first_name']
+              doctor.last_name = form.cleaned_data['last_name']
+              doctor.email = form.cleaned_data['email']
+              doctor.contact = form.cleaned_data['contact']
+              doctor.specialization = form.cleaned_data['specialization']
+              doctor.license_number = form.cleaned_data['license_number']
+              doctor.years_of_experience = form.cleaned_data['years_of_experience']
+              doctor.qualifications = form.cleaned_data['qualifications'].split('\n')
 
-    #          try:
-    #              doctor.save()
-    #              messages.success(request, 'Profile updated successfully!')
-    #              return redirect('settings')
-    #          except Exception as e:
-    #              messages.error(request, f'Error saving profile: {str(e)}')
-    #      else:
-    #          initial_data = {
-    #              'first_name': doctor.first_name,
-    #              'last_name': doctor.last_name,
-    #              'email': doctor.email,
-    #              'contact': doctor.contact,
-    #              'specialization': doctor.specialization,
-    #              'license_number': doctor.license_number,
-    #              'years_of_experience': doctor.years_of_experience,
-    #              'qualifications': '\n'.join(doctor.qualifications) if doctor.qualifications else '',
-    #          }
-    #          form = DoctorProfileForm(initial=initial_data)
+              try:
+                  doctor.save()
+                  messages.success(request, 'Profile updated successfully!')
+                  return redirect('settings')
+              except Exception as e:
+                  messages.error(request, f'Error saving profile: {str(e)}')
+          else:
+              initial_data = {
+                  'first_name': doctor.first_name,
+                  'last_name': doctor.last_name,
+                  'email': doctor.email,
+                  'contact': doctor.contact,
+                  'specialization': doctor.specialization,
+                  'license_number': doctor.license_number,
+                  'years_of_experience': doctor.years_of_experience,
+                  'qualifications': '\n'.join(doctor.qualifications) if doctor.qualifications else '',
+              }
+              form = DoctorProfileForm(initial=initial_data)
     
-            #  return render(request, 'DoctorApp/settings.html') #{'form': form, 'doctor': doctor})
+              return render(request, 'DoctorApp/settings.html', {'form': form, 'doctor': doctor})
 
 
 # these are the routes ive set up
 
 # def doctor_dashboard(request):
-
 #     return render(request, 'DoctorApp/dashboard.html')
 
 def settings_view(request):
@@ -304,4 +305,28 @@ def predict_growth_rate(request):
 
 
 
+#inventory for views 
+from django.http import JsonResponse
 
+def get_inventory(request):
+    region = request.GET.get('region')
+    if not region:
+        return JsonResponse({'error': 'Region not specified'}, status=400)
+
+    try:
+        # Normalize whitespace and lowercase
+        df = med_df.copy()
+        df['Region'] = df['Region'].str.strip().str.lower()
+        region = region.strip().lower()
+
+        # Only select medications
+        meds = df[(df['Region'] == region) & (df['Category'].str.lower() == 'medications')]
+
+        # Prepare response
+        data = meds[['Item', 'Cost (KES)', 'Available Stock']].rename(
+            columns={'Item': 'Medication', 'Cost (KES)': 'Cost', 'Available Stock': 'Stock'}
+        ).to_dict(orient='records')
+
+        return JsonResponse({'medications': data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
