@@ -3,8 +3,8 @@ from . import views
 # from .views import message_patient
 
 urlpatterns = [
-    # path('', views.register_doctor, name='register_doctor'),
-    # path('login/', views.login_doctor, name='login_doctor'),
+    path('', views.register_doctor, name='register_doctor'),
+    path('login/', views.login_doctor, name='login_doctor'),
     path('dashboard/', views.doctor_dashboard, name='dashboard'),
     path('patients/', views.patients, name='patients'),  
     # path('message/<str:patient_name>/', message_patient, name='message_patient'),

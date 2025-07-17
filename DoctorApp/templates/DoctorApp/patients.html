@@ -1,20 +1,18 @@
 {% extends 'DoctorApp/base.html' %}
-
 {% block title %}Doctor Dashboard - Patients{% endblock %}
-
 {% block extra_css %}
 <style>
   body {
     background: #ffb3ba;
   }
-
+  
   .patients-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     padding: 1rem;
   }
-
+  
   .patient-card {
     background: #fff;
     padding: 1rem;
@@ -25,16 +23,16 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease;
   }
-
+  
   .patient-card:hover {
     transform: scale(1.03);
   }
-
+  
   .avatar-icon {
     font-size: 48px;
     margin-bottom: 0.7rem;
   }
-
+  
   .popup-overlay {
     position: fixed;
     inset: 0;
@@ -43,93 +41,542 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
   }
-
+  
   .popup-overlay.active {
     display: flex;
   }
-
+  
   .popup-body {
-    background: #cc9197;
+    background: white;
     padding: 2rem;
     border-radius: 12px;
-    max-width: 500px;
+    max-width: 900px;
     width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
   }
-
-  .info-section {
-    margin-bottom: 1rem;
-  }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-  }
-
-  .info-label {
+  
+  .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
     font-weight: bold;
   }
+  
+/*patins section syling */
+.patient-cont{
+    display: flex;
+    border-radius: 10px;
+    box-shadow: #ffb3ba 0px 0px 10px;
+  }
+   
+  .patient-avatar-large {
+    flex: 15%;
+    margin-bottom: 1.5rem;
+  }
+  
+  .patient-avatar-large .avatar-icon {
+    font-size: 64px;
+    margin-bottom: 0.5rem;
+  }
+.patient-info {
+    flex: 85%;
+    padding-left: 1.5rem;
+  }
+  
+  .inside-patinfo{
+  display: flex;
+    flex-direction: row;
+    justify-content: space-between 27rem;
+    height: 100%;
 
+  }
+  
+  .info-section {
+    margin-bottom: 1.5rem;
+  }
+  
+  .info-section h4 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    border-bottom: 2px solid #34495e;
+    padding-bottom: 0.5rem;
+  }
+  
+  .info-row {
+    /*display: flex;*/
+    justify-content: space-between;
+    margin-bottom: 0.7rem;
+    padding: 0.3rem 0;
+  }
+  
+  .info-label {
+    font-weight: bold;
+    color: #2c3e50;
+    min-width: 120px;
+  }
+  
+  .info-value {
+    color: #34495e;
+    text-align: right;
+    flex: 1;
+  }
+  
   .message-btn {
-    background: #007bff;
-    color: #ffb3ba;
-    padding: 0.5rem 1rem;
+    background: #ffb3ba;
+    color: white;
+    padding: 0.8rem 1.5rem;
     border: none;
     border-radius: 8px;
     cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 1rem;
+    font-size: 1rem;
   }
-
+  
   .message-btn:hover {
-    background: #0056b3;
+    background: #ffb3ba;
   }
+  
+  /* Symptom Tracking Styles */
+  .symptoms-section {
+    margin-top: 2rem;
+  }
+  
+  .stats-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+  }
+  
+  .stat-box {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    flex: 1;
+  }
+  
+  .stat-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 0.3rem;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: #34495e;
+    font-weight: 600;
+  }
+  
+  .symptom-item {
+    background: rgba(255, 255, 255, 0.15);
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #ffebee;
+  }
+  
+  .symptom-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+  }
+  
+  .symptom-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #2c3e50;
+  }
+  
+  .symptom-rank {
+    background: #007bff;
+    color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+  }
+  
+  .symptom-details {
+    font-size: 0.9rem;
+    color: #34495e;
+    margin-bottom: 0.8rem;
+  }
+  
+  .progress-container {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .progress-item {
+    flex: 1;
+  }
+  
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: #ffb3ba;
+    transition: width 0.3s ease;
+  }
+  
+  .trend-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .trend-increasing {
+    background: #ffebee;
+    color: #c62828;
+  }
+  
+  .trend-decreasing {
+    background: #e8f5e8;
+    color: #2e7d32;
+  }
+  
+  .trend-stable {
+    background: #f3f4f6;
+    color: #64748b;
+  }
+  
+  .insights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .insight-box {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .insight-title {
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+    color: #2c3e50;
+  }
+  
+  .high-priority {
+    color: #c62828;
+  }
+  
+  .improving {
+    color: #2e7d32;
+  }
+  
+  .insight-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .insight-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: #34495e;
+  }
+  
+  .symptom-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  
+  .bg-red { background: #ef4444; }
+  .bg-orange { background: #f97316; }
+  .bg-yellow { background: #eab308; }
 </style>
 {% endblock %}
 
 {% block content %}
 <h2 style="text-align:center;">Patient Profiles</h2>
-
 <div id="patientsContainer" class="patients-grid">
   <!-- JS will inject patient cards here -->
 </div>
 
-<!-- Popup -->
+<!-- Enhanced Popup with V1 Styling -->
 <div id="popupOverlay" class="popup-overlay">
   <div class="popup-body">
-    <div class="patient-avatar-large">
-      <div class="avatar-icon" id="popupAvatar">👤</div>
-    </div>
-    <div class="patient-info">
-      <div class="info-section">
-        <h4>Personal Information</h4>
-        <div class="info-row">
-          <span class="info-label">First Name:</span>
-          <span class="info-value" id="popupFirstName">-</span>
+    <button class="close-btn" onclick="closePopup()">&times;</button>
+      <div class="info-section symptoms-section">
+        <h4>30-Day Symptom Overview</h4>
+         <h4>Personal Information</h4>
+
+        <div class="patient-cont">
+    
+        <div class="patient-avatar-large">
+          <div class="avatar-icon" id="popupAvatar">👤</div>
         </div>
-        <div class="info-row">
-          <span class="info-label">Last Name:</span>
-          <span class="info-value" id="popupLastName">-</span>
+        <div class="patient-info">
+          <div class="inside-patinfo">
+            <!-- Personal Information Section -->
+            <div class="info-section">
+              <div class="info-row">
+                <span class="info-label">First Name:</span>
+                <span class="info-value" id="popupFirstName">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Last Name:</span>
+                <span class="info-value" id="popupLastName">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value" id="popupEmail">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Contact:</span>
+                <span class="info-value" id="popupContact">-</span>
+              </div>
+            </div>  
+
+            <div class="info-section2">
+                    <div class="info-row">
+                  <span class="info-label">Date of Birth:</span>
+                  <span class="info-value" id="popupDOB">-</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Blood Type:</span>
+                  <span class="info-value">A+</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Patient ID:</span>
+                  <span class="info-value" id="popupPatientId">-</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Notes:</span>
+                  <span class="info-value" id="popupNotes">-</span>
+                </div>
+            </div>
+          </div>  
+          
         </div>
-        <div class="info-row">
-          <span class="info-label">Email:</span>
-          <span class="info-value" id="popupEmail">-</span>
+
         </div>
-        <div class="info-row">
-          <span class="info-label">Contact:</span>
-          <span class="info-value" id="popupContact">-</span>
+        
+        <!-- Summary Stats -->
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-number">66</div>
+            <div class="stat-label">Total Logs</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">6.1/10</div>
+            <div class="stat-label">Avg Intensity</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number">Bloating</div>
+            <div class="stat-label">Most Frequent</div>
+          </div>
         </div>
-        <div class="info-row">
-          <span class="info-label">Date of Birth:</span>
-          <span class="info-value" id="popupDOB">-</span>
+
+      <!-- Top Symptoms -->
+      <div class="symptom-item">
+        <div class="symptom-header">
+          <div class="symptom-name">1. Bloating</div>
+          <div class="symptom-rank">18</div>
         </div>
-        <div class="info-row">
-          <span class="info-label">Notes:</span>
-          <span class="info-value" id="popupNotes">-</span>
+        <div class="symptom-details">
+          Logged 18 times • Avg intensity: 7.2/10 • Max: 9/10
+          <span class="trend-badge trend-increasing">↗️ Increasing</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>Frequency</span>
+              <span>18/30</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 60%;"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>Intensity</span>
+              <span>7.2/10</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 72%;"></div>
+            </div>
+          </div>
         </div>
       </div>
-      <button class="message-btn" onclick="goToChat()">💬 Message Patient</button>
+
+      <div class="symptom-item">
+        <div class="symptom-header">
+          <div class="symptom-name">2. Headache</div>
+          <div class="symptom-rank">15</div>
+        </div>
+        <div class="symptom-details">
+          Logged 15 times • Avg intensity: 6.8/10 • Max: 8/10
+          <span class="trend-badge trend-stable">Stable</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>Frequency</span>
+              <span>15/30</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 50%;"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>Intensity</span>
+              <span>6.8/10</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 68%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="symptom-item">
+        <div class="symptom-header">
+          <div class="symptom-name">3. Fatigue</div>
+          <div class="symptom-rank">12</div>
+        </div>
+        <div class="symptom-details">
+          Logged 12 times • Avg intensity: 6.1/10 • Max: 8/10
+          <span class="trend-badge trend-decreasing">↘️ Decreasing</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>Frequency</span>
+              <span>12/30</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 40%;"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>Intensity</span>
+              <span>6.1/10</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 61%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="symptom-item">
+        <div class="symptom-header">
+          <div class="symptom-name">4. Nausea</div>
+          <div class="symptom-rank">9</div>
+        </div>
+        <div class="symptom-details">
+          Logged 9 times • Avg intensity: 5.4/10 • Max: 7/10
+          <span class="trend-badge trend-stable">Stable</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>Frequency</span>
+              <span>9/30</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 30%;"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>Intensity</span>
+              <span>5.4/10</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 54%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clinical Insights -->
+      <div class="insights-grid">
+        <div class="insight-box">
+          <div class="insight-title high-priority">High Priority Symptoms</div>
+          <ul class="insight-list">
+            <li class="insight-item">
+              <div class="symptom-dot bg-red"></div>
+              <span>Bloating - 18 occurrences, avg 7.2/10</span>
+            </li>
+            <li class="insight-item">
+              <div class="symptom-dot bg-orange"></div>
+              <span>Headache - 15 occurrences, avg 6.8/10</span>
+            </li>
+            <li class="insight-item">
+              <div class="symptom-dot bg-yellow"></div>
+              <span>Fatigue - 12 occurrences, avg 6.1/10</span>
+            </li>
+          </ul>
+        </div>
+        <div class="insight-box">
+          <div class="insight-title improving">Improving Symptoms</div>
+          <ul class="insight-list">
+            <li class="insight-item">
+              <span>↘️</span>
+              <span>Fatigue - showing improvement</span>
+            </li>
+            <li class="insight-item">
+              <span>↘️</span>
+              <span>Joint Pain - showing improvement</span>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
+
+    <button class="message-btn" onclick="goToChat()">💬 Message Patient</button>
   </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -138,43 +585,89 @@
   let patientsData = {};
   let currentPatientKey = null;
 
-  async function loadPatients() {
-    try {
-      const response = await fetch("{% url 'list_patients' %}");
-      const data = await response.json();
-      const container = document.getElementById('patientsContainer');
-      container.innerHTML = '';
+  function loadPatients() {
+    const container = document.getElementById('patientsContainer');
+    const dummyPatients = [
+      {
+        id: 1,
+        first_name: 'Alice',
+        last_name: 'Smith',
+        email: 'alice@example.com',
+        contactno: '555-1234',
+        date_of_birth: '1990-01-01',
+        notes: 'rapturesd cyst',
+        avatar: '👩',
+      },
+      {
+        id: 2,
+        first_name: 'Paulin',
+        last_name: 'Johnson',
+        email: 'bob@example.com',
+        contactno: '555-5678',
+        date_of_birth: '1985-07-20',
+        notes: 'monitoring for cystic fibrosis',
+        avatar: '👩',
+      },
+      {
+        id: 3,
+        first_name: 'Clara',
+        last_name: 'Nguyen',
+        email: 'clara@example.com',
+        contactno: '555-9012',
+        date_of_birth: '1992-03-10',
+        notes: 'cystic fibrosis',
+        avatar: '👩',
+      },
+      {
+        id: 4,
+        first_name: 'Kathrine',
+        last_name: 'Lee',
+        email: 'david@example.com',
+        contactno: '555-3456',
+        date_of_birth: '1978-11-05',
+        notes: 'stage2 cerviccal cancer',
+        avatar: '👩',
+      },
+      {
+        id: 5,
+        first_name: 'Eva',
+        last_name: 'Garcia',
+        email: 'eva@example.com',
+        contactno: '555-7890',
+        date_of_birth: '2000-06-15',
+        notes: 'Healthy',
+        avatar: '👩',
+      }
+    ];
 
-      data.forEach((patient, index) => {
-        const key = `patient${index}`;
-        patientsData[key] = {
-          id: patient.id,
-          firstName: patient.first_name,
-          LastName: patient.last_name,
-          email: patient.email || '-',
-          contactno: patient.contactno || '-',
-          date_of_birth: patient.date_of_birth || '-',
-          notes: patient.notes || '-',
-          avatar: patient.avatar || '👤'
-        };
+    dummyPatients.forEach((patient, index) => {
+      const key = `patient${index}`;
+      patientsData[key] = {
+        id: patient.id,
+        firstName: patient.first_name,
+        LastName: patient.last_name,
+        email: patient.email,
+        contactno: patient.contactno,
+        date_of_birth: patient.date_of_birth,
+        notes: patient.notes,
+        avatar: patient.avatar
+      };
 
-        const card = document.createElement('div');
-        card.className = 'patient-card';
-        card.innerHTML = `
-          <div class="avatar-icon">${patientsData[key].avatar}</div>
-          <div class="patient-name">${patientsData[key].firstName}</div>
-        `;
-        card.onclick = () => showPatientDetails(key);
-        container.appendChild(card);
-      });
-    } catch (error) {
-      console.error('Failed to load patients:', error);
-    }
+      const card = document.createElement('div');
+      card.className = 'patient-card';
+      card.innerHTML = `
+        <div class="avatar-icon">${patient.avatar}</div>
+        <div class="patient-name">${patient.first_name}</div>
+      `;
+      card.onclick = () => showPatientDetails(key);
+      container.appendChild(card);
+    });
   }
 
   function showPatientDetails(key) {
     currentPatientKey = key;
     const patient = patientsData[key];
+    
     document.getElementById('popupAvatar').textContent = patient.avatar;
     document.getElementById('popupFirstName').textContent = patient.firstName;
     document.getElementById('popupLastName').textContent = patient.LastName;
@@ -182,14 +675,26 @@
     document.getElementById('popupContact').textContent = patient.contactno;
     document.getElementById('popupDOB').textContent = patient.date_of_birth;
     document.getElementById('popupNotes').textContent = patient.notes;
-
+    document.getElementById('popupPatientId').textContent = `PT-2024-${patient.id.toString().padStart(3, '0')}`;
+    
     document.getElementById('popupOverlay').classList.add('active');
+  }
+
+  function closePopup() {
+    document.getElementById('popupOverlay').classList.remove('active');
   }
 
   function goToChat() {
     const patient = patientsData[currentPatientKey];
     window.location.href = `/message/${patient.firstName}/`;
   }
+
+  // Close popup when clicking outside
+  document.getElementById('popupOverlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closePopup();
+    }
+  });
 
   window.onload = loadPatients;
 </script>
