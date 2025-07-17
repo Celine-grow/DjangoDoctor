@@ -1,812 +1,138 @@
-{% extends 'DoctorApp/base.html' %}
-{% block title %}Doctor Dashboard - Patients{% endblock %}
-{% block extra_css %}
-<style>
-  body {
-    background: #ffb3ba;
-  }
-  
-  .patients-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding: 1rem;
-  }
-  
-  .patient-card {
-    background: #fff;
-    padding: 1rem;
-    border-radius: 10px;
-    cursor: pointer;
-    width: 200px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-  }
-  
-  .patient-card:hover {
-    transform: scale(1.03);
-  }
-  
-  .avatar-icon {
-    font-size: 48px;
-    margin-bottom: 0.7rem;
-  }
-  
-  .popup-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    overflow-y: auto;
-    padding: 20px;
-  }
-  
-  .popup-overlay.active {
-    display: flex;
-  }
-  
-  .popup-body {
-    background: #f8f9fa;
-    border-radius: 12px;
-    max-width: 1200px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-  }
-  
-  .close-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    font-size: 20px;
-    z-index: 1001;
-  }
-  
-  .dashboard-container {
-    padding: 20px;
-  }
-  
-  .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-  
-  .dashboard-title {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #1f2937;
-    margin: 0;
-  }
-  
-  .dashboard-subtitle {
-    color: #6b7280;
-    margin: 0;
-  }
-  
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    background: white;
-  }
-  
-  .card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 24px;
-  }
-  
-  .card-header {
-    padding: 24px 24px 0 24px;
-  }
-  
-  .card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0 0 8px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .card-description {
-    color: #6b7280;
-    margin: 0;
-  }
-  
-  .card-content {
-    padding: 24px;
-  }
-  
-  .profile-section {
-    display: flex;
-    align-items: start;
-    gap: 24px;
-    margin-bottom: 16px;
-  }
-  
-  .avatar-large {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    flex-shrink: 0;
-  }
-  
-  .profile-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    flex: 1;
-  }
-  
-  .profile-item {
-    margin-bottom: 12px;
-  }
-  
-  .profile-label {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin-bottom: 4px;
-  }
-  
-  .profile-value {
-    font-weight: 600;
-  }
-  
-  .separator {
-    height: 1px;
-    background: #e5e7eb;
-    margin: 16px 0;
-  }
-  
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 24px;
-    margin-bottom: 24px;
-  }
-  
-  .stat-card {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-  
-  .stat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .stat-label {
-    font-size: 0.875rem;
-    color: #6b7280;
-  }
-  
-  .stat-value {
-    font-size: 2rem;
-    font-weight: bold;
-    margin: 0;
-  }
-  
-  .stat-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-  }
-  
-  .symptom-item {
-    margin-bottom: 24px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .symptom-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
-  
-  .symptom-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-  
-  .symptom-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .symptom-rank {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 0.875rem;
-  }
-  
-  .symptom-info h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin: 0 0 4px 0;
-  }
-  
-  .symptom-details {
-    font-size: 0.875rem;
-    color: #6b7280;
-  }
-  
-  .symptom-badges {
-    display: flex;
-    gap: 8px;
-  }
-  
-  .trend-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  
-  .trend-increasing {
-    background: #fef2f2;
-    color: #dc2626;
-  }
-  
-  .trend-decreasing {
-    background: #f0fdf4;
-    color: #16a34a;
-  }
-  
-  .trend-stable {
-    background: #f1f5f9;
-    color: #64748b;
-  }
-  
-  .progress-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 16px;
-  }
-  
-  .progress-item {
-    margin-bottom: 8px;
-  }
-  
-  .progress-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.875rem;
-    margin-bottom: 8px;
-  }
-  
-  .progress-bar {
-    width: 100%;
-    height: 8px;
-    background: #e5e7eb;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  
-  .progress-fill {
-    height: 100%;
-    background: #3b82f6;
-    transition: width 0.3s ease;
-  }
-  
-  .insights-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px;
-  }
-  
-  .insight-section h4 {
-    font-weight: 600;
-    margin: 0 0 12px 0;
-  }
-  
-  .high-priority {
-    color: #dc2626;
-  }
-  
-  .improving {
-    color: #16a34a;
-  }
-  
-  .insight-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .insight-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.875rem;
-    margin-bottom: 8px;
-  }
-  
-  .symptom-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-  }
-  
-  .allergy-badges {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  
-  .allergy-badge {
-    background: #fef2f2;
-    color: #dc2626;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    font-weight: 500;
-  }
-  
-  .message-btn {
-    background: #007bff;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    margin-top: 16px;
-  }
-  
-  .message-btn:hover {
-    background: #0056b3;
-  }
-  
-  /* Color classes for symptoms */
-  .bg-red-500 { background: #ef4444; }
-  .bg-orange-500 { background: #f97316; }
-  .bg-yellow-500 { background: #eab308; }
-  .bg-green-500 { background: #22c55e; }
-  .bg-blue-500 { background: #3b82f6; }
-  .bg-purple-500 { background: #a855f7; }
-</style>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Doctor Dashboard - Patients</title>
+  <style>
+    .patients-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    body{
+        background: #ffb3ba;
+    }
 
-{% block content %}
-<h2 style="text-align:center;">Patient Profiles</h2>
-<div id="patientsContainer" class="patients-grid">
-  <!-- JS will inject patient cards here -->
-</div>
+    .patient-card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 200px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
 
-<!-- Enhanced Popup -->
-<div id="popupOverlay" class="popup-overlay">
-  <div class="popup-body">
-    <button class="close-btn" onclick="closePopup()">&times;</button>
-    
-    <div class="dashboard-container">
-      <!-- Header -->
-      <div class="dashboard-header">
-        <div>
-          <h1 class="dashboard-title">Patient Dashboard</h1>
-          <p class="dashboard-subtitle">30-Day Symptom Tracking Overview</p>
-        </div>
-        <div class="badge">
-          📅 Last 30 Days
-        </div>
+    .patient-card:hover {
+      transform: scale(1.03);
+    }
+
+    .avatar-icon {
+      font-size: 48px;
+      margin-bottom: 0.7rem;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .popup-overlay.active {
+      display: flex;
+    }
+
+    .popup-body {
+      background:#cc9197;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .info-section {
+      margin-bottom: 1rem;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-label {
+      font-weight: bold;
+    }
+
+    .message-btn {
+      background: #007bff;
+      color: #ffb3ba;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .message-btn:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 style="text-align:center;">Patient Profiles</h2>
+
+  <div id="patientsContainer" class="patients-grid">
+    <!-- JS will inject patient cards here -->
+  </div>
+  <!-- <h2 style="text-align: center;">
+  Chat with {{ patient.first_name }} ({{ patient.last_name }})
+  </h2> -->
+
+  <!-- Popup -->
+  <div id="popupOverlay" class="popup-overlay">
+    <div class="popup-body">
+      <div class="patient-avatar-large">
+        <div class="avatar-icon" id="popupAvatar">👤</div>
       </div>
-
-      <!-- Patient Profile -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">
-            👤 Patient Information
-          </h2>
-        </div>
-        <div class="card-content">
-          <div class="profile-section">
-            <div class="avatar-large" id="popupAvatarLarge">👤</div>
-            <div class="profile-grid">
-              <div class="profile-item">
-                <div class="profile-label">Name</div>
-                <div class="profile-value" id="popupFullName">-</div>
-              </div>
-              <div class="profile-item">
-                <div class="profile-label">Age</div>
-                <div class="profile-value">34 years</div>
-              </div>
-              <div class="profile-item">
-                <div class="profile-label">Patient ID</div>
-                <div class="profile-value" id="popupPatientId">-</div>
-              </div>
-              <div class="profile-item">
-                <div class="profile-label">Blood Type</div>
-                <div class="profile-value">A+</div>
-              </div>
-              <div class="profile-item">
-                <div class="profile-label">Email</div>
-                <div class="profile-value" id="popupEmailDetail">-</div>
-              </div>
-              <div class="profile-item">
-                <div class="profile-label">Phone</div>
-                <div class="profile-value" id="popupContactDetail">-</div>
-              </div>
-            </div>
+      <div class="patient-info">
+        <div class="info-section">
+          <h4>Personal Information</h4>
+          <div class="info-row">
+            <span class="info-label">First Name:</span>
+            <span class="info-value" id="popupFirstName">-</span>
           </div>
-          <div class="separator"></div>
-          <div class="profile-grid">
-            <div class="profile-item">
-              <div class="profile-label">Allergies</div>
-              <div class="allergy-badges">
-                <span class="allergy-badge">Penicillin</span>
-                <span class="allergy-badge">Shellfish</span>
-              </div>
-            </div>
-            <div class="profile-item">
-              <div class="profile-label">Emergency Contact</div>
-              <div class="profile-value">John Johnson - (555) 987-6543</div>
-            </div>
+          <div class="info-row">
+            <span class="info-label">Last Name:</span>
+            <span class="info-value" id="popupLastName">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value" id="popupEmail">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Contact:</span>
+            <span class="info-value" id="popupContact">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Date of Birth:</span>
+            <span class="info-value" id="popupDOB">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Notes:</span>
+            <span class="info-value" id="popupNotes">-</span>
           </div>
         </div>
-      </div>
-
-      <!-- Summary Stats -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-header">
-            <div>
-              <div class="stat-label">Total Symptom Logs</div>
-              <div class="stat-value">66</div>
-            </div>
-            <div class="stat-icon" style="background: #dbeafe; color: #3b82f6;">📊</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-header">
-            <div>
-              <div class="stat-label">Average Intensity</div>
-              <div class="stat-value">6.1/10</div>
-            </div>
-            <div class="stat-icon" style="background: #fed7aa; color: #ea580c;">6.1</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-header">
-            <div>
-              <div class="stat-label">Most Frequent</div>
-              <div class="stat-value">Bloating</div>
-            </div>
-            <div class="stat-icon bg-red-500" style="color: white;">18</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Symptoms Ranking -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">
-            📊 Symptom Tracking - Ranked by Frequency & Intensity
-          </h2>
-          <p class="card-description">
-            Symptoms logged over the past 30 days, ranked from highest to lowest frequency
-          </p>
-        </div>
-        <div class="card-content">
-          <div class="symptom-item">
-            <div class="symptom-header">
-              <div class="symptom-left">
-                <div class="symptom-rank">1</div>
-                <div class="symptom-info">
-                  <h3>Bloating</h3>
-                  <div class="symptom-details">
-                    Logged 18 times • Avg intensity: 7.2/10 • Max: 9/10
-                  </div>
-                </div>
-              </div>
-              <div class="symptom-badges">
-                <span class="trend-badge trend-increasing">
-                  ↗️ Increasing
-                </span>
-              </div>
-            </div>
-            <div class="progress-grid">
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Frequency (30 days)</span>
-                  <span>18/30</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 60%;"></div>
-                </div>
-              </div>
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Average Intensity</span>
-                  <span>7.2/10</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 72%;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="symptom-item">
-            <div class="symptom-header">
-              <div class="symptom-left">
-                <div class="symptom-rank">2</div>
-                <div class="symptom-info">
-                  <h3>Headache</h3>
-                  <div class="symptom-details">
-                    Logged 15 times • Avg intensity: 6.8/10 • Max: 8/10
-                  </div>
-                </div>
-              </div>
-              <div class="symptom-badges">
-                <span class="trend-badge trend-stable">Stable</span>
-              </div>
-            </div>
-            <div class="progress-grid">
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Frequency (30 days)</span>
-                  <span>15/30</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 50%;"></div>
-                </div>
-              </div>
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Average Intensity</span>
-                  <span>6.8/10</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 68%;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="symptom-item">
-            <div class="symptom-header">
-              <div class="symptom-left">
-                <div class="symptom-rank">3</div>
-                <div class="symptom-info">
-                  <h3>Fatigue</h3>
-                  <div class="symptom-details">
-                    Logged 12 times • Avg intensity: 6.1/10 • Max: 8/10
-                  </div>
-                </div>
-              </div>
-              <div class="symptom-badges">
-                <span class="trend-badge trend-decreasing">
-                  ↘️ Decreasing
-                </span>
-              </div>
-            </div>
-            <div class="progress-grid">
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Frequency (30 days)</span>
-                  <span>12/30</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 40%;"></div>
-                </div>
-              </div>
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Average Intensity</span>
-                  <span>6.1/10</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 61%;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="symptom-item">
-            <div class="symptom-header">
-              <div class="symptom-left">
-                <div class="symptom-rank">4</div>
-                <div class="symptom-info">
-                  <h3>Nausea</h3>
-                  <div class="symptom-details">
-                    Logged 9 times • Avg intensity: 5.4/10 • Max: 7/10
-                  </div>
-                </div>
-              </div>
-              <div class="symptom-badges">
-                <span class="trend-badge trend-stable">Stable</span>
-              </div>
-            </div>
-            <div class="progress-grid">
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Frequency (30 days)</span>
-                  <span>9/30</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 30%;"></div>
-                </div>
-              </div>
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Average Intensity</span>
-                  <span>5.4/10</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 54%;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="symptom-item">
-            <div class="symptom-header">
-              <div class="symptom-left">
-                <div class="symptom-rank">5</div>
-                <div class="symptom-info">
-                  <h3>Joint Pain</h3>
-                  <div class="symptom-details">
-                    Logged 7 times • Avg intensity: 4.8/10 • Max: 6/10
-                  </div>
-                </div>
-              </div>
-              <div class="symptom-badges">
-                <span class="trend-badge trend-decreasing">
-                  ↘️ Decreasing
-                </span>
-              </div>
-            </div>
-            <div class="progress-grid">
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Frequency (30 days)</span>
-                  <span>7/30</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 23%;"></div>
-                </div>
-              </div>
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Average Intensity</span>
-                  <span>4.8/10</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 48%;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="symptom-item">
-            <div class="symptom-header">
-              <div class="symptom-left">
-                <div class="symptom-rank">6</div>
-                <div class="symptom-info">
-                  <h3>Dizziness</h3>
-                  <div class="symptom-details">
-                    Logged 5 times • Avg intensity: 4.2/10 • Max: 6/10
-                  </div>
-                </div>
-              </div>
-              <div class="symptom-badges">
-                <span class="trend-badge trend-stable">Stable</span>
-              </div>
-            </div>
-            <div class="progress-grid">
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Frequency (30 days)</span>
-                  <span>5/30</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 17%;"></div>
-                </div>
-              </div>
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>Average Intensity</span>
-                  <span>4.2/10</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 42%;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Clinical Insights -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Clinical Insights</h2>
-        </div>
-        <div class="card-content">
-          <div class="insights-grid">
-            <div class="insight-section">
-              <h4 class="high-priority">High Priority Symptoms</h4>
-              <ul class="insight-list">
-                <li class="insight-item">
-                  <div class="symptom-dot bg-red-500"></div>
-                  <span>Bloating - 18 occurrences, avg 7.2/10</span>
-                </li>
-                <li class="insight-item">
-                  <div class="symptom-dot bg-orange-500"></div>
-                  <span>Headache - 15 occurrences, avg 6.8/10</span>
-                </li>
-                <li class="insight-item">
-                  <div class="symptom-dot bg-yellow-500"></div>
-                  <span>Fatigue - 12 occurrences, avg 6.1/10</span>
-                </li>
-              </ul>
-            </div>
-            <div class="insight-section">
-              <h4 class="improving">Improving Symptoms</h4>
-              <ul class="insight-list">
-                <li class="insight-item">
-                  <span>↘️</span>
-                  <span>Fatigue - showing improvement</span>
-                </li>
-                <li class="insight-item">
-                  <span>↘️</span>
-                  <span>Joint Pain - showing improvement</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          
-          <button class="message-btn" onclick="goToChat()">💬 Message Patient</button>
-        </div>
+        <button class="message-btn" onclick="goToChat()">💬 Message Patient</button>
       </div>
     </div>
   </div>
-</div>
-{% endblock %}
 
 {% block extra_js %}
 <script>
@@ -847,36 +173,27 @@
     }
   }
 
-  function showPatientDetails(key) {
-    currentPatientKey = key;
-    const patient = patientsData[key];
-    
-    // Update popup content with patient data
-    document.getElementById('popupAvatarLarge').textContent = patient.avatar;
-    document.getElementById('popupFullName').textContent = `${patient.firstName} ${patient.LastName}`;
-    document.getElementById('popupPatientId').textContent = `PT-2024-${patient.id.toString().padStart(3, '0')}`;
-    document.getElementById('popupEmailDetail').textContent = patient.email;
-    document.getElementById('popupContactDetail').textContent = patient.contactno;
-    
-    document.getElementById('popupOverlay').classList.add('active');
-  }
+    function showPatientDetails(key) {
+      currentPatientKey = key;
+      const patient = patientsData[key];
+      document.getElementById('popupAvatar').textContent = patient.avatar;
+      document.getElementById('popupFirstName').textContent = patient.firstName;
+      document.getElementById('popupLastName').textContent = patient.LastName;
+      document.getElementById('popupEmail').textContent = patient.email;
+      document.getElementById('popupContact').textContent = patient.contactno;
+      document.getElementById('popupDOB').textContent = patient.date_of_birth;
+      document.getElementById('popupNotes').textContent = patient.notes;
 
-  function closePopup() {
-    document.getElementById('popupOverlay').classList.remove('active');
-  }
-
-  function goToChat() {
-    const patient = patientsData[currentPatientKey];
-    window.location.href = `/message/${patient.firstName}/`;
-  }
-
-  // Close popup when clicking outside
-  document.getElementById('popupOverlay').addEventListener('click', function(e) {
-    if (e.target === this) {
-      closePopup();
+      document.getElementById('popupOverlay').classList.add('active');
     }
-  });
 
-  window.onload = loadPatients;
-</script>
-{% endblock %}
+    function goToChat() {
+      const patient = patientsData[currentPatientKey];
+      window.location.href = `/message/${patient.firstName}/`;  // You can use email too
+    }
+
+    window.onload = loadPatients;
+  </script>
+
+</body>
+</html>
