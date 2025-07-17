@@ -1,198 +1,196 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Doctor Dashboard - Patients</title>
-  <style>
-    .patients-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 1rem;
-    }
-    body{
-        background: #ffb3ba;
-    }
+{% extends 'DoctorApp/base.html' %}
 
-    .patient-card {
-      background: #fff;
-      padding: 1rem;
-      border-radius: 10px;
-      cursor: pointer;
-      width: 200px;
-      text-align: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
-    }
+{% block title %}Doctor Dashboard - Patients{% endblock %}
 
-    .patient-card:hover {
-      transform: scale(1.03);
-    }
+{% block extra_css %}
+<style>
+  body {
+    background: #ffb3ba;
+  }
 
-    .avatar-icon {
-      font-size: 48px;
-      margin-bottom: 0.7rem;
-    }
+  .patients-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+  }
 
-    .popup-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
+  .patient-card {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 200px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+  }
 
-    .popup-overlay.active {
-      display: flex;
-    }
+  .patient-card:hover {
+    transform: scale(1.03);
+  }
 
-    .popup-body {
-      background:#cc9197;
-      padding: 2rem;
-      border-radius: 12px;
-      max-width: 500px;
-      width: 100%;
-    }
+  .avatar-icon {
+    font-size: 48px;
+    margin-bottom: 0.7rem;
+  }
 
-    .info-section {
-      margin-bottom: 1rem;
-    }
+  .popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
 
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.5rem;
-    }
+  .popup-overlay.active {
+    display: flex;
+  }
 
-    .info-label {
-      font-weight: bold;
-    }
+  .popup-body {
+    background: #cc9197;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+  }
 
-    .message-btn {
-      background: #007bff;
-      color: #ffb3ba;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+  .info-section {
+    margin-bottom: 1rem;
+  }
 
-    .message-btn:hover {
-      background: #0056b3;
-    }
-  </style>
-</head>
-<body>
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
 
-  <h2 style="text-align:center;">Patient Profiles</h2>
+  .info-label {
+    font-weight: bold;
+  }
 
-  <div id="patientsContainer" class="patients-grid">
-    <!-- JS will inject patient cards here -->
-  </div>
-  <!-- <h2 style="text-align: center;">
-  Chat with {{ patient.first_name }} ({{ patient.last_name }})
-  </h2> -->
+  .message-btn {
+    background: #007bff;
+    color: #ffb3ba;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
 
-  <!-- Popup -->
-  <div id="popupOverlay" class="popup-overlay">
-    <div class="popup-body">
-      <div class="patient-avatar-large">
-        <div class="avatar-icon" id="popupAvatar">👤</div>
-      </div>
-      <div class="patient-info">
-        <div class="info-section">
-          <h4>Personal Information</h4>
-          <div class="info-row">
-            <span class="info-label">First Name:</span>
-            <span class="info-value" id="popupFirstName">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Last Name:</span>
-            <span class="info-value" id="popupLastName">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Email:</span>
-            <span class="info-value" id="popupEmail">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Contact:</span>
-            <span class="info-value" id="popupContact">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Date of Birth:</span>
-            <span class="info-value" id="popupDOB">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Notes:</span>
-            <span class="info-value" id="popupNotes">-</span>
-          </div>
+  .message-btn:hover {
+    background: #0056b3;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 style="text-align:center;">Patient Profiles</h2>
+
+<div id="patientsContainer" class="patients-grid">
+  <!-- JS will inject patient cards here -->
+</div>
+
+<!-- Popup -->
+<div id="popupOverlay" class="popup-overlay">
+  <div class="popup-body">
+    <div class="patient-avatar-large">
+      <div class="avatar-icon" id="popupAvatar">👤</div>
+    </div>
+    <div class="patient-info">
+      <div class="info-section">
+        <h4>Personal Information</h4>
+        <div class="info-row">
+          <span class="info-label">First Name:</span>
+          <span class="info-value" id="popupFirstName">-</span>
         </div>
-        <button class="message-btn" onclick="goToChat()">💬 Message Patient</button>
+        <div class="info-row">
+          <span class="info-label">Last Name:</span>
+          <span class="info-value" id="popupLastName">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value" id="popupEmail">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Contact:</span>
+          <span class="info-value" id="popupContact">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Date of Birth:</span>
+          <span class="info-value" id="popupDOB">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Notes:</span>
+          <span class="info-value" id="popupNotes">-</span>
+        </div>
       </div>
+      <button class="message-btn" onclick="goToChat()">💬 Message Patient</button>
     </div>
   </div>
+</div>
+{% endblock %}
 
-  <script>
-    let patientsData = {};
-    let currentPatientKey = null;
+{% block extra_js %}
+<script>
+  let patientsData = {};
+  let currentPatientKey = null;
 
-    async function loadPatients() {
-      try {
-        const response = await fetch('/list_patients/');
-        const data = await response.json();
-        const container = document.getElementById('patientsContainer');
-        container.innerHTML = '';
+  async function loadPatients() {
+    try {
+      const response = await fetch("{% url 'list_patients' %}");
+      const data = await response.json();
+      const container = document.getElementById('patientsContainer');
+      container.innerHTML = '';
 
-        data.forEach((patient, index) => {
-          const key = `patient${index}`;
-          patientsData[key] = {
-            id: patient.id,
-            firstName: patient.first_name,
-            LastName: patient.last_name,
-            email: patient.email || '-',
-            contactno: patient.contactno|| '-',
-            date_of_birth: patient.date_of_birth || '-',
-            notes: patient.notes || '-',
-            avatar: patient.avatar || '👤'
-          };
+      data.forEach((patient, index) => {
+        const key = `patient${index}`;
+        patientsData[key] = {
+          id: patient.id,
+          firstName: patient.first_name,
+          LastName: patient.last_name,
+          email: patient.email || '-',
+          contactno: patient.contactno || '-',
+          date_of_birth: patient.date_of_birth || '-',
+          notes: patient.notes || '-',
+          avatar: patient.avatar || '👤'
+        };
 
-          const card = document.createElement('div');
-          card.className = 'patient-card';
-          card.innerHTML = `
-            <div class="avatar-icon">${patientsData[key].avatar}</div>
-            <div class="patient-name">${patientsData[key].firstName}</div>
-          `;
-          card.onclick = () => showPatientDetails(key);
-          container.appendChild(card);
-        });
-      } catch (error) {
-        console.error('Failed to load patients:', error);
-      }
+        const card = document.createElement('div');
+        card.className = 'patient-card';
+        card.innerHTML = `
+          <div class="avatar-icon">${patientsData[key].avatar}</div>
+          <div class="patient-name">${patientsData[key].firstName}</div>
+        `;
+        card.onclick = () => showPatientDetails(key);
+        container.appendChild(card);
+      });
+    } catch (error) {
+      console.error('Failed to load patients:', error);
     }
+  }
 
-    function showPatientDetails(key) {
-      currentPatientKey = key;
-      const patient = patientsData[key];
-      document.getElementById('popupAvatar').textContent = patient.avatar;
-      document.getElementById('popupFirstName').textContent = patient.firstName;
-      document.getElementById('popupLastName').textContent = patient.LastName;
-      document.getElementById('popupEmail').textContent = patient.email;
-      document.getElementById('popupContact').textContent = patient.contactno;
-      document.getElementById('popupDOB').textContent = patient.date_of_birth;
-      document.getElementById('popupNotes').textContent = patient.notes;
+  function showPatientDetails(key) {
+    currentPatientKey = key;
+    const patient = patientsData[key];
+    document.getElementById('popupAvatar').textContent = patient.avatar;
+    document.getElementById('popupFirstName').textContent = patient.firstName;
+    document.getElementById('popupLastName').textContent = patient.LastName;
+    document.getElementById('popupEmail').textContent = patient.email;
+    document.getElementById('popupContact').textContent = patient.contactno;
+    document.getElementById('popupDOB').textContent = patient.date_of_birth;
+    document.getElementById('popupNotes').textContent = patient.notes;
 
-      document.getElementById('popupOverlay').classList.add('active');
-    }
+    document.getElementById('popupOverlay').classList.add('active');
+  }
 
-    function goToChat() {
-      const patient = patientsData[currentPatientKey];
-      window.location.href = `/message/${patient.firstName}/`;  // You can use email too
-    }
+  function goToChat() {
+    const patient = patientsData[currentPatientKey];
+    window.location.href = `/message/${patient.firstName}/`;
+  }
 
-    window.onload = loadPatients;
-  </script>
-
-</body>
-</html>
+  window.onload = loadPatients;
+</script>
+{% endblock %}
