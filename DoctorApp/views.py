@@ -116,7 +116,7 @@ def message_patient(request, patient_name):
             "document_url": document_url
         }
 
-        api_url = "http://10.2.8.84:8000/api/auth/receive_message/"
+        api_url = "http://10.2.8.100:8000/api/auth/receive_message/"
 
         try:
             response = requests.post(api_url, json=payload, timeout=5)
