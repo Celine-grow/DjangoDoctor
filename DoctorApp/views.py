@@ -118,7 +118,7 @@ def message_patient(request, patient_name):
             "document_url": document_url
         }
 
-        api_url = "http://10.2.8.100:8000/api/auth/receive_message/"
+        api_url = "http://192.168.100.249:8000/api/auth/receive_message/"
 
         try:
             response = requests.post(api_url, json=payload, timeout=5)
@@ -245,6 +245,8 @@ from pycaret.regression import load_model, predict_model
 
 # Load the model once when views.py is loaded
 growth_model = load_model('DoctorApp/growth_rate_model')  # adjust path if needed
+
+
 
 @csrf_exempt
 def predict_growth_rate(request):
