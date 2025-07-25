@@ -91,39 +91,44 @@ def message_patient(request, patient_name):
         messages.error(request, "Logged-in doctor not found.")
         return redirect('doctor_login')
 
-    # 🧠 GET patient info to pass to template
+    # Get patient object
     try:
         patient = Patient.objects.get(first_name=patient_name)
     except Patient.DoesNotExist:
         messages.error(request, "Patient not found.")
-        return redirect('dashboard')  # Or wherever
+        return redirect('dashboard')
 
     if request.method == 'POST':
         print("🟢 POST request received")
-        print("📝 Message:", request.POST.get('message'))
+
         message_text = request.POST.get('message')
+        print("📝 Message:", message_text)
+
         doctor_name = f"{doctor.first_name} {doctor.last_name}"
         document_file = request.FILES.get('document')
-        document_url = ''
 
-        if document_file:
-            fs = FileSystemStorage()
-            filename = fs.save(document_file.name, document_file)
-            document_url = request.build_absolute_uri(fs.url(filename))
-
-        payload = {
+        # Build form data for Flutter API
+        data = {
             "patient_email": patient.email,
             "doctor_name": doctor_name,
             "message": message_text,
-            "document_url": document_url
         }
 
-        api_url = "http://192.168.100.249:8000/api/auth/receive_message/"
+        files = {}
+        if document_file:
+            files["document"] = (
+                document_file.name,
+                document_file.read(),
+                document_file.content_type
+            )
+
+        api_url = "http://10.2.8.51:8000/api/auth/receive_message/"
 
         try:
-            response = requests.post(api_url, json=payload, timeout=5)
+            response = requests.post(api_url, data=data, files=files, timeout=5)
             print("📡 Response status:", response.status_code)
             print("📡 Response body:", response.text)
+
             if response.status_code == 201:
                 messages.success(request, "Message sent successfully!")
             else:
@@ -133,11 +138,11 @@ def message_patient(request, patient_name):
 
         return redirect('message_patient', patient_name=patient_name)
 
-    # GET request - show chat page with patient info
+    # GET request - show chat page
     return render(request, 'DoctorApp/chat.html', {
-        'patient_email': patient_name,
+        'patient_email': patient.email,
         'doctor_name': f"{doctor.first_name} {doctor.last_name}",
-        'patient': patient  # ✅ pass full patient object
+        'patient': patient
     })
 @csrf_exempt
 def add_patient(request):
